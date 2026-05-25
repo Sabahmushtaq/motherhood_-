@@ -386,7 +386,7 @@ export default function Home() {
       {/* ─── NAV ─── */}
       <nav>
         <a href="#home" className="logo-wrap" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <img className="logo-img mix-blend-multiply bg-white" src="/motherhood_logo.jpg" alt="Motherhood Women & Children's Hospital" />
+          <img className="logo-img mix-blend-multiply bg-white" src="motherhood_logo.jpg" alt="Motherhood Women & Children's Hospital" />
         </a>
         <div className="nav-right">
           <a href="tel:08069549251" className="nav-phone">
@@ -406,7 +406,7 @@ export default function Home() {
         {/* Full-bleed background image */}
         <div className="hero-bg">
           <img
-            src="/hero_mother_baby.png"
+            src="hero_mother_baby.png"
             alt="Mother holding her newborn baby"
             className="w-full h-full object-cover object-[62%_32%] md:object-[55%_22%] block"
           />
@@ -747,7 +747,7 @@ export default function Home() {
             {/* Doctor image panel */}
             <div className="relative rounded-[20px] overflow-hidden border border-[#ede0ee] shadow-md bg-gradient-to-br from-[#fce8f4] to-[#ede8f5] h-full min-h-[360px]">
               <img
-                src="/doctor_anand.png"
+                src="doctor_anand.png"
                 alt="Expert Doctor at Motherhood Hospital"
                 className="w-full h-full object-cover object-[center_top] block min-h-[360px]"
               />
