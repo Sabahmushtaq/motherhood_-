@@ -583,6 +583,7 @@ export default function Home() {
                 ref={sliderRef}
                 style={{ animationPlayState: isDoctorsPaused ? "paused" : "running" }}
                 onClick={() => setIsDoctorsPaused(!isDoctorsPaused)}
+                onTouchStart={() => setIsDoctorsPaused(!isDoctorsPaused)}
               >
                 {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
@@ -839,6 +840,7 @@ export default function Home() {
               className="review-row"
               style={{ animationPlayState: isReviewsPaused ? "paused" : "running" }}
               onClick={() => setIsReviewsPaused(!isReviewsPaused)}
+              onTouchStart={() => setIsReviewsPaused(!isReviewsPaused)}
             >
               {/* Set 1 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
