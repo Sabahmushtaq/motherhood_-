@@ -860,7 +860,6 @@ footer a{color:var(--lavender-mid)}
   .doctors-section,.birthing-section,.reviews-section,.location-section,.final-cta{padding:var(--section-space) 18px;}
   .doctors-slider-wrap{margin-left:-18px !important;margin-right:-18px !important;}
   .review-marquee{margin-left:-18px !important;margin-right:-18px !important;}
-  .doctors-slider, .review-row{animation-play-state:running !important;}
 
 }
 @media(max-width:640px){
