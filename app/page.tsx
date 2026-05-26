@@ -748,7 +748,7 @@ export default function Home() {
                   const target = e.target as HTMLElement;
                   if (target.closest('.doctor-card')) {
                     e.stopPropagation();
-                    setIsDoctorsPaused(true);
+                    setIsDoctorsPaused((prev) => !prev);
                   }
                 }}
               >
@@ -823,7 +823,8 @@ export default function Home() {
                 <button
                   key={idx}
                   className={`slider-dot ${idx === activeDot ? "active" : ""}`}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setActiveDot(idx);
                     if (sliderRef.current) {
                       const oneSetWidth = sliderRef.current.scrollWidth / 4;
@@ -832,6 +833,7 @@ export default function Home() {
                         behavior: "smooth"
                       });
                     }
+                    setIsDoctorsPaused((prev) => !prev);
                   }}
                   aria-label={`Doctor ${idx + 1}`}
                 />
@@ -1008,7 +1010,7 @@ export default function Home() {
                 const target = e.target as HTMLElement;
                 if (target.closest('.review-card')) {
                   e.stopPropagation();
-                  setIsReviewsPaused(true);
+                  setIsReviewsPaused((prev) => !prev);
                 }
               }}
             >
