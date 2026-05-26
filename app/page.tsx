@@ -272,6 +272,23 @@ export default function Home() {
   const [isDoctorsPaused, setIsDoctorsPaused] = useState<boolean>(false);
   const [isReviewsPaused, setIsReviewsPaused] = useState<boolean>(false);
 
+  const lastDoctorsToggleTime = useRef<number>(0);
+  const lastReviewsToggleTime = useRef<number>(0);
+
+  const toggleDoctorsPause = () => {
+    const now = Date.now();
+    if (now - lastDoctorsToggleTime.current < 300) return;
+    lastDoctorsToggleTime.current = now;
+    setIsDoctorsPaused((prev) => !prev);
+  };
+
+  const toggleReviewsPause = () => {
+    const now = Date.now();
+    if (now - lastReviewsToggleTime.current < 300) return;
+    lastReviewsToggleTime.current = now;
+    setIsReviewsPaused((prev) => !prev);
+  };
+
   // Inquiry Form State
   const [formData, setFormData] = useState({
     name: "",
@@ -582,8 +599,8 @@ export default function Home() {
                 id="doctorsSlider"
                 ref={sliderRef}
                 style={{ animationPlayState: isDoctorsPaused ? "paused" : "running" }}
-                onClick={() => setIsDoctorsPaused(!isDoctorsPaused)}
-                onTouchStart={() => setIsDoctorsPaused(!isDoctorsPaused)}
+                onClick={toggleDoctorsPause}
+                onTouchStart={toggleDoctorsPause}
               >
                 {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
@@ -839,8 +856,8 @@ export default function Home() {
             <div
               className="review-row"
               style={{ animationPlayState: isReviewsPaused ? "paused" : "running" }}
-              onClick={() => setIsReviewsPaused(!isReviewsPaused)}
-              onTouchStart={() => setIsReviewsPaused(!isReviewsPaused)}
+              onClick={toggleReviewsPause}
+              onTouchStart={toggleReviewsPause}
             >
               {/* Set 1 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
