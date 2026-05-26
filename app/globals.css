@@ -482,7 +482,7 @@ nav{
 }
 @keyframes doctorsScroll{
   0%{transform:translateX(0);}
-  100%{transform:translateX(-50%);}
+  100%{transform:translateX(-25%);}
 }
 
 .doctor-card{
@@ -570,7 +570,7 @@ nav{
 @media (hover: hover) {
   .review-marquee:hover .review-row{animation-play-state:paused;}
 }
-@keyframes scrollReviews{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes scrollReviews{from{transform:translateX(0)}to{transform:translateX(-25%)}}
 .review-card{
   width:270px;padding:15px 17px;flex-shrink:0;
   background:var(--warm-white);
@@ -724,10 +724,10 @@ footer a{color:var(--lavender-mid)}
     position:absolute; inset:0;
     z-index:2;
     background:linear-gradient(180deg,
-      rgba(237,232,245,0.05) 0%,
-      rgba(237,232,245,0.45) 38%,
-      rgba(226,212,245,0.82) 68%,
-      rgba(220,205,242,0.94) 100%);
+      transparent 0%,
+      rgba(237,232,245,0.0) 45%,
+      rgba(226,212,245,0.65) 75%,
+      rgba(220,205,242,0.92) 100%);
     pointer-events:none;
   }
  

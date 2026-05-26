@@ -629,7 +629,7 @@ export default function Home() {
         <div className="doctors-slider-wrap">
             <div className="doctors-track-outer">
               <div className="doctors-slider" id="doctorsSlider" ref={sliderRef}>
-                {/* Original set */}
+                {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
                   <div key={doc.id} className="doctor-card">
                     <div className="doctor-photo">
@@ -645,9 +645,41 @@ export default function Home() {
                   </div>
                 ))}
 
-                {/* Duplicate set for seamless loop */}
+                {/* Set 2 */}
                 {CHENNAI_DOCTORS.map((doc, idx) => (
                   <div key={`${doc.id}-dup-${idx}`} className="doctor-card" aria-hidden="true">
+                    <div className="doctor-photo">
+                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
+                        {doc.initials}
+                      </div>
+                    </div>
+                    <div className="doctor-name">{doc.name}</div>
+                    <div className="doctor-qual">{doc.qualifications}</div>
+                    <div className="doctor-type">{doc.specialty}</div>
+                    <div className="doctor-location">📍 {doc.location}</div>
+                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                  </div>
+                ))}
+
+                {/* Set 3 */}
+                {CHENNAI_DOCTORS.map((doc, idx) => (
+                  <div key={`${doc.id}-dup3-${idx}`} className="doctor-card" aria-hidden="true">
+                    <div className="doctor-photo">
+                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
+                        {doc.initials}
+                      </div>
+                    </div>
+                    <div className="doctor-name">{doc.name}</div>
+                    <div className="doctor-qual">{doc.qualifications}</div>
+                    <div className="doctor-type">{doc.specialty}</div>
+                    <div className="doctor-location">📍 {doc.location}</div>
+                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                  </div>
+                ))}
+
+                {/* Set 4 */}
+                {CHENNAI_DOCTORS.map((doc, idx) => (
+                  <div key={`${doc.id}-dup4-${idx}`} className="doctor-card" aria-hidden="true">
                     <div className="doctor-photo">
                       <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
                         {doc.initials}
@@ -791,6 +823,7 @@ export default function Home() {
 
         <div className="review-marquee">
             <div className="review-row">
+              {/* Set 1 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
                 <div key={`rev-${idx}`} className="review-card">
                   <div className="review-top">
@@ -804,9 +837,37 @@ export default function Home() {
                 </div>
               ))}
 
-              {/* Duplicate reviews to enable endless scrolling */}
+              {/* Set 2 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
                 <div key={`rev-dup-${idx}`} className="review-card" aria-hidden="true">
+                  <div className="review-top">
+                    <div>
+                      <div className="review-name">{rev.name}</div>
+                      <div className="review-meta">{rev.meta}</div>
+                    </div>
+                    <div className="review-stars">{rev.stars}</div>
+                  </div>
+                  <p>{rev.text}</p>
+                </div>
+              ))}
+
+              {/* Set 3 */}
+              {PATIENT_REVIEWS.map((rev, idx) => (
+                <div key={`rev-dup3-${idx}`} className="review-card" aria-hidden="true">
+                  <div className="review-top">
+                    <div>
+                      <div className="review-name">{rev.name}</div>
+                      <div className="review-meta">{rev.meta}</div>
+                    </div>
+                    <div className="review-stars">{rev.stars}</div>
+                  </div>
+                  <p>{rev.text}</p>
+                </div>
+              ))}
+
+              {/* Set 4 */}
+              {PATIENT_REVIEWS.map((rev, idx) => (
+                <div key={`rev-dup4-${idx}`} className="review-card" aria-hidden="true">
                   <div className="review-top">
                     <div>
                       <div className="review-name">{rev.name}</div>
