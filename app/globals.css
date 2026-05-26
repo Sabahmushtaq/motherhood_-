@@ -132,6 +132,9 @@ nav{
   object-position:55% 22%;
   display:block;
 }
+.hero-img-mobile{
+  display:none !important;
+}
 .hero-bg::after{
   content:''; position:absolute; inset:0;
   background:
@@ -714,12 +717,17 @@ footer a{color:var(--lavender-mid)}
     mask-image: none !important;
     -webkit-mask-image: none !important;
   }
-  .hero-bg img{
-    width:100%;
-    height:100%;
-    object-fit:cover;
+  .hero-img-desktop{
+    display:none !important;
+  }
+  .hero-img-mobile{
+    display:block !important;
+    position:absolute;
+    inset:0;
+    width:100% !important;
+    height:100% !important;
+    object-fit:cover !important;
     object-position:center !important; /* perfectly center serene mother + baby image */
-    display:block;
     filter: none !important;
     -webkit-filter: none !important;
     backdrop-filter: none !important;

@@ -410,12 +410,12 @@ export default function Home() {
           <img
             src="hero_mother_baby.png"
             alt="Mother holding her newborn baby"
-            className="hidden md:block w-full h-full object-cover md:object-[55%_22%]"
+            className="hero-img-desktop w-full h-full object-cover md:object-[55%_22%]"
           />
           <img
             src="hero_mobile_banner.jpg"
             alt="Serene mother hugging newborn baby"
-            className="block md:hidden w-full h-full object-cover object-center"
+            className="hero-img-mobile w-full h-full object-cover object-center"
           />
         </div>
 
