@@ -315,6 +315,19 @@ export default function Home() {
       } else if (track.scrollLeft <= oneSetWidth * 0.5) {
         track.scrollLeft += oneSetWidth;
       }
+
+      // Calculate active dot index dynamically from current scroll position
+      const relativeScroll = track.scrollLeft - oneSetWidth;
+      const cardWidth = 226;
+      const currentIdx = Math.round(relativeScroll / cardWidth);
+      const positiveIdx = ((currentIdx % CHENNAI_DOCTORS.length) + CHENNAI_DOCTORS.length) % CHENNAI_DOCTORS.length;
+      
+      setActiveDot((prev) => {
+        if (prev !== positiveIdx) {
+          return positiveIdx;
+        }
+        return prev;
+      });
     };
 
     const step = () => {
@@ -434,13 +447,7 @@ export default function Home() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Sync dots with doctor slider autoscroll
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveDot((prev) => (prev + 1) % CHENNAI_DOCTORS.length);
-    }, 4400);
-    return () => clearInterval(interval);
-  }, []);
+  // Dot index is now synchronized dynamically via handleScroll on the slider track.
 
   // Form Handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -713,8 +720,6 @@ export default function Home() {
             <div
               className="doctors-track-outer"
               ref={sliderRef}
-              onClick={toggleDoctorsPause}
-              onTouchStart={toggleDoctorsPause}
             >
               <div
                 className="doctors-slider"
@@ -794,8 +799,9 @@ export default function Home() {
                   onClick={() => {
                     setActiveDot(idx);
                     if (sliderRef.current) {
+                      const oneSetWidth = sliderRef.current.scrollWidth / 4;
                       sliderRef.current.scrollTo({
-                        left: idx * 226,
+                        left: oneSetWidth + idx * 226,
                         behavior: "smooth"
                       });
                     }
@@ -973,8 +979,6 @@ export default function Home() {
         <div
           className="review-marquee"
           ref={reviewsTrackRef}
-          onClick={toggleReviewsPause}
-          onTouchStart={toggleReviewsPause}
         >
             <div className="review-row">
               {/* Set 1 */}
