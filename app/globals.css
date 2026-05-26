@@ -463,8 +463,8 @@ nav{
 /* CSS infinite autoscroll track */
 .doctors-track-outer{
   overflow:hidden;
-  mask-image:linear-gradient(90deg,transparent 0%,black 6%,black 94%,transparent 100%);
-  -webkit-mask-image:linear-gradient(90deg,transparent 0%,black 6%,black 94%,transparent 100%);
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
 }
 .doctors-slider{
   display:flex;gap:16px;
@@ -551,7 +551,11 @@ nav{
 .rpb-logo.practo{background:#02bcd4;color:#fff;font-size:8.5px;}
 .rpb-score{color:var(--charcoal);font-size:15px;font-weight:700;line-height:1;font-family:'Roboto',sans-serif;}
 .rpb-label{color:var(--muted);font-size:9.5px;margin-top:2px;font-family:'Roboto',sans-serif;}
-.review-marquee{overflow:hidden;mask-image:linear-gradient(90deg,transparent,black 8%,black 92%,transparent);}
+.review-marquee{
+  overflow:hidden;
+  mask-image: none !important;
+  -webkit-mask-image: none !important;
+}
 .review-row{display:flex;gap:13px;width:max-content;animation:scrollReviews 28s linear infinite;}
 .review-marquee:hover .review-row{animation-play-state:paused}
 @keyframes scrollReviews{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -809,7 +813,7 @@ footer a{color:var(--lavender-mid)}
   .lc-steps{grid-template-columns:repeat(3,1fr);gap:18px 0;}
   .lc-track::before{display:none}
   .doctors-section,.birthing-section,.reviews-section,.location-section,.final-cta{padding:var(--section-space) 18px;}
-  .doctors-track-outer{mask-image:linear-gradient(90deg,transparent 0%,black 3%,black 97%,transparent 100%);-webkit-mask-image:linear-gradient(90deg,transparent 0%,black 3%,black 97%,transparent 100%);}
+
 }
 @media(max-width:640px){
   nav{padding:0 10px;height:46px;}
