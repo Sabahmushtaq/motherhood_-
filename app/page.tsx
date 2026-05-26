@@ -268,6 +268,7 @@ const MATERNITY_STAGES: Stage[] = [
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const reviewsTrackRef = useRef<HTMLDivElement>(null);
   const [activeDot, setActiveDot] = useState<number>(0);
   const [isDoctorsPaused, setIsDoctorsPaused] = useState<boolean>(false);
   const [isReviewsPaused, setIsReviewsPaused] = useState<boolean>(false);
@@ -288,6 +289,122 @@ export default function Home() {
     lastReviewsToggleTime.current = now;
     setIsReviewsPaused((prev) => !prev);
   };
+
+  // Autoscroll & infinite wrap for Doctors track
+  useEffect(() => {
+    const track = sliderRef.current;
+    if (!track) return;
+
+    let animationFrameId: number;
+    let isHovered = false;
+    let isTouched = false;
+
+    const initScroll = () => {
+      if (track.scrollWidth > 0) {
+        track.scrollLeft = track.scrollWidth / 4;
+      }
+    };
+    
+    const timer = setTimeout(initScroll, 100);
+
+    const handleScroll = () => {
+      const oneSetWidth = track.scrollWidth / 4;
+      if (oneSetWidth <= 0) return;
+      if (track.scrollLeft >= oneSetWidth * 2.5) {
+        track.scrollLeft -= oneSetWidth;
+      } else if (track.scrollLeft <= oneSetWidth * 0.5) {
+        track.scrollLeft += oneSetWidth;
+      }
+    };
+
+    const step = () => {
+      if (!isHovered && !isTouched && !isDoctorsPaused) {
+        track.scrollLeft += 0.8;
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+
+    const onMouseEnter = () => { isHovered = true; };
+    const onMouseLeave = () => { isHovered = false; };
+    const onTouchStart = () => { isTouched = true; };
+    const onTouchEnd = () => { isTouched = false; };
+
+    track.addEventListener("scroll", handleScroll, { passive: true });
+    track.addEventListener("mouseenter", onMouseEnter);
+    track.addEventListener("mouseleave", onMouseLeave);
+    track.addEventListener("touchstart", onTouchStart, { passive: true });
+    track.addEventListener("touchend", onTouchEnd);
+
+    animationFrameId = requestAnimationFrame(step);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(animationFrameId);
+      track.removeEventListener("scroll", handleScroll);
+      track.removeEventListener("mouseenter", onMouseEnter);
+      track.removeEventListener("mouseleave", onMouseLeave);
+      track.removeEventListener("touchstart", onTouchStart);
+      track.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [isDoctorsPaused]);
+
+  // Autoscroll & infinite wrap for Reviews track
+  useEffect(() => {
+    const track = reviewsTrackRef.current;
+    if (!track) return;
+
+    let animationFrameId: number;
+    let isHovered = false;
+    let isTouched = false;
+
+    const initScroll = () => {
+      if (track.scrollWidth > 0) {
+        track.scrollLeft = track.scrollWidth / 4;
+      }
+    };
+    
+    const timer = setTimeout(initScroll, 100);
+
+    const handleScroll = () => {
+      const oneSetWidth = track.scrollWidth / 4;
+      if (oneSetWidth <= 0) return;
+      if (track.scrollLeft >= oneSetWidth * 2.5) {
+        track.scrollLeft -= oneSetWidth;
+      } else if (track.scrollLeft <= oneSetWidth * 0.5) {
+        track.scrollLeft += oneSetWidth;
+      }
+    };
+
+    const step = () => {
+      if (!isHovered && !isTouched && !isReviewsPaused) {
+        track.scrollLeft += 0.8;
+      }
+      animationFrameId = requestAnimationFrame(step);
+    };
+
+    const onMouseEnter = () => { isHovered = true; };
+    const onMouseLeave = () => { isHovered = false; };
+    const onTouchStart = () => { isTouched = true; };
+    const onTouchEnd = () => { isTouched = false; };
+
+    track.addEventListener("scroll", handleScroll, { passive: true });
+    track.addEventListener("mouseenter", onMouseEnter);
+    track.addEventListener("mouseleave", onMouseLeave);
+    track.addEventListener("touchstart", onTouchStart, { passive: true });
+    track.addEventListener("touchend", onTouchEnd);
+
+    animationFrameId = requestAnimationFrame(step);
+
+    return () => {
+      clearTimeout(timer);
+      cancelAnimationFrame(animationFrameId);
+      track.removeEventListener("scroll", handleScroll);
+      track.removeEventListener("mouseenter", onMouseEnter);
+      track.removeEventListener("mouseleave", onMouseLeave);
+      track.removeEventListener("touchstart", onTouchStart);
+      track.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [isReviewsPaused]);
 
   // Inquiry Form State
   const [formData, setFormData] = useState({
@@ -581,7 +698,7 @@ export default function Home() {
               <div className="offer-amount">₹5,000 worth</div><div className="offer-label">Discounts on OPD Services</div>
             </div>
           </div>
-          <div className="offer-footnote">*Book a free consultation to confirm eligibility and activate your benefits before the offer period closes. T&amp;C apply.</div>
+          <div className="offer-footnote mobile-hide">*Book a free consultation to confirm eligibility and activate your benefits before the offer period closes. T&amp;C apply.</div>
         </div>
       </section>
 
@@ -593,14 +710,15 @@ export default function Home() {
         </div>
 
         <div className="doctors-slider-wrap">
-            <div className="doctors-track-outer">
+            <div
+              className="doctors-track-outer"
+              ref={sliderRef}
+              onClick={toggleDoctorsPause}
+              onTouchStart={toggleDoctorsPause}
+            >
               <div
                 className="doctors-slider"
                 id="doctorsSlider"
-                ref={sliderRef}
-                style={{ animationPlayState: isDoctorsPaused ? "paused" : "running" }}
-                onClick={toggleDoctorsPause}
-                onTouchStart={toggleDoctorsPause}
               >
                 {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
@@ -697,9 +815,9 @@ export default function Home() {
               <div className="lc-pulse"></div>
               <span>Complete Care &middot; Every Stage</span>
             </div>
-            <div className="section-eyebrow" style={{ justifyContent: "center" }}><span className="eyebrow-line"></span> From First Heartbeat to First Breath</div>
+            <div className="section-eyebrow mobile-hide" style={{ justifyContent: "center" }}><span className="eyebrow-line"></span> From First Heartbeat to First Breath</div>
             <h2 className="section-title">We Complete Care &mdash; <em style={{ fontStyle: "normal", color: "var(--lavender-dark)" }}>Every Step of the Way</em></h2>
-            <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</p>
+            <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. <span className="mobile-hide-inline">We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</span></p>
           </div>
 
           <div className="lc-track">
@@ -852,13 +970,13 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="review-marquee">
-            <div
-              className="review-row"
-              style={{ animationPlayState: isReviewsPaused ? "paused" : "running" }}
-              onClick={toggleReviewsPause}
-              onTouchStart={toggleReviewsPause}
-            >
+        <div
+          className="review-marquee"
+          ref={reviewsTrackRef}
+          onClick={toggleReviewsPause}
+          onTouchStart={toggleReviewsPause}
+        >
+            <div className="review-row">
               {/* Set 1 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
                 <div key={`rev-${idx}`} className="review-card">

@@ -469,16 +469,19 @@ nav{
   margin-left:-52px;
   margin-right:-52px;
 }
-/* CSS infinite autoscroll track */
 .doctors-track-outer{
-  overflow:hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   mask-image: none !important;
   -webkit-mask-image: none !important;
+}
+.doctors-track-outer::-webkit-scrollbar {
+  display: none;
 }
 .doctors-slider{
   display:flex;gap:16px;
   width:max-content;
-  animation:doctorsScroll 22s linear infinite;
 }
 @media (hover: hover) {
   .doctors-slider:hover{animation-play-state:paused;}
@@ -563,17 +566,22 @@ nav{
 .rpb-score{color:var(--charcoal);font-size:15px;font-weight:700;line-height:1;font-family:'Roboto',sans-serif;}
 .rpb-label{color:var(--muted);font-size:9.5px;margin-top:2px;font-family:'Roboto',sans-serif;}
 .review-marquee{
-  overflow:hidden;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   mask-image: none !important;
   -webkit-mask-image: none !important;
   margin-left:-52px;
   margin-right:-52px;
 }
-.review-row{display:flex;gap:13px;width:max-content;animation:scrollReviews 28s linear infinite;}
-@media (hover: hover) {
-  .review-marquee:hover .review-row{animation-play-state:paused;}
+.review-marquee::-webkit-scrollbar {
+  display: none;
 }
-@keyframes scrollReviews{from{transform:translateX(0)}to{transform:translateX(-25%)}}
+.review-row{
+  display:flex;
+  gap:13px;
+  width:max-content;
+}
 .review-card{
   width:270px;padding:15px 17px;flex-shrink:0;
   background:var(--warm-white);
@@ -835,6 +843,11 @@ footer a{color:var(--lavender-mid)}
   }
 
   .stats-bar{padding:14px 16px;}
+  .stats-inner {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 16px 12px !important;
+  }
   .stat-num{font-size:clamp(16px,4.5vw,24px) !important;}
   .stat-label{font-size:9px !important;}
   .package-highlight{padding:var(--section-space) 18px;}
@@ -861,6 +874,15 @@ footer a{color:var(--lavender-mid)}
   .doctors-slider-wrap{margin-left:-18px !important;margin-right:-18px !important;}
   .review-marquee{margin-left:-18px !important;margin-right:-18px !important;}
 
+  .mobile-hide {
+    display: none !important;
+  }
+  .mobile-hide-inline {
+    display: none !important;
+  }
+  .offer-cards-row {
+    margin-top: 12px !important;
+  }
 }
 @media(max-width:640px){
   nav{padding:0 10px;height:46px;}
@@ -883,7 +905,130 @@ footer a{color:var(--lavender-mid)}
   .offer-cards-row{grid-template-columns:repeat(2,1fr);}
   .hero-right{padding:16px 14px 24px;}
   .hero-form-wrap{padding:20px 16px 18px;border-radius:16px;}
-  .lc-steps{grid-template-columns:repeat(2,1fr);}
+
+  /* ─── COMPLETE CARE RADIAL WHEEL ─── */
+  #complete-care{padding:22px 14px !important;}
+  #complete-care .lc-track{margin-top:18px !important;padding-bottom:0 !important;}
+  #complete-care .lc-track::before{display:none !important;}
+
+  /* Wheel container */
+  #complete-care .lc-steps{
+    position:relative !important;
+    display:block !important;
+    width:300px !important;
+    height:300px !important;
+    margin:0 auto !important;
+    border-radius:50% !important;
+    background:
+      radial-gradient(circle at center, #fff 0 38%, transparent 38.5%),
+      conic-gradient(from -90deg,
+        #fde4f1 0deg 60deg,
+        #f3dffa 60deg 120deg,
+        #e3dcfb 120deg 180deg,
+        #dde6fb 180deg 240deg,
+        #f0e0f8 240deg 300deg,
+        #fce0ec 300deg 360deg) !important;
+    box-shadow:
+      inset 0 0 0 2px rgba(192,120,180,.18),
+      0 10px 30px rgba(120,80,140,.15) !important;
+  }
+  /* Center hub label */
+  #complete-care .lc-steps::after{
+    content:"Every\A Stage" !important;
+    white-space:pre !important;
+    position:absolute !important;
+    top:50% !important;left:50% !important;
+    transform:translate(-50%,-50%) !important;
+    font-size:12px !important;
+    font-weight:800 !important;
+    color:var(--lavender-dark) !important;
+    text-align:center !important;
+    line-height:1.15 !important;
+    letter-spacing:.3px !important;
+    text-transform:uppercase !important;
+  }
+
+  /* Each step is positioned absolutely around the wheel */
+  #complete-care .lc-step{
+    position:absolute !important;
+    top:50% !important;left:50% !important;
+    width:78px !important;
+    margin:0 !important;padding:0 !important;
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    text-align:center !important;
+    transform-origin:center center !important;
+  }
+  /* 6 spokes — radius ~118px from center, 60deg apart starting at top */
+  #complete-care .lc-step:nth-child(1){transform:translate(-50%,-50%) rotate(0deg)   translateY(-118px) rotate(0deg) !important;}
+  #complete-care .lc-step:nth-child(2){transform:translate(-50%,-50%) rotate(60deg)  translateY(-118px) rotate(-60deg) !important;}
+  #complete-care .lc-step:nth-child(3){transform:translate(-50%,-50%) rotate(120deg) translateY(-118px) rotate(-120deg) !important;}
+  #complete-care .lc-step:nth-child(4){transform:translate(-50%,-50%) rotate(180deg) translateY(-118px) rotate(-180deg) !important;}
+  #complete-care .lc-step:nth-child(5){transform:translate(-50%,-50%) rotate(240deg) translateY(-118px) rotate(-240deg) !important;}
+  #complete-care .lc-step:nth-child(6){transform:translate(-50%,-50%) rotate(300deg) translateY(-118px) rotate(-300deg) !important;}
+
+  #complete-care .lc-step:nth-child(even) .lc-icon-ring,
+  #complete-care .lc-step:nth-child(even) .lc-card{margin-top:0 !important;}
+
+  #complete-care .lc-icon-ring{
+    width:54px !important;height:54px !important;margin:0 0 4px !important;
+  }
+  #complete-care .lc-baby-circle{
+    width:52px !important;height:52px !important;
+    border-width:2px !important;
+    box-shadow:0 4px 10px rgba(107,85,160,.22),0 0 0 3px #fff !important;
+  }
+  #complete-care .lc-baby-circle svg{width:32px !important;height:32px !important;}
+  #complete-care .lc-connector-dot{display:none !important;}
+
+  #complete-care .lc-card{
+    background:transparent !important;
+    border:0 !important;
+    box-shadow:none !important;
+    padding:0 !important;
+    backdrop-filter:none !important;
+    margin:0 !important;
+    width:100% !important;
+  }
+  #complete-care .lc-step-num{
+    font-size:7.5px !important;
+    letter-spacing:.4px !important;
+    color:var(--lavender-dark) !important;
+    font-weight:700 !important;
+    margin:0 !important;
+    text-transform:uppercase !important;
+    line-height:1.1 !important;
+  }
+  #complete-care .lc-step-title{
+    font-size:9.5px !important;
+    line-height:1.15 !important;
+    margin:1px 0 0 !important;
+    color:var(--charcoal) !important;
+    font-weight:800 !important;
+  }
+  #complete-care .lc-step-desc{display:none !important;}
+  #complete-care .lc-step-tag{
+    display:inline-block !important;
+    font-size:7.5px !important;
+    margin-top:2px !important;
+    padding:1px 5px !important;
+    background:rgba(255,255,255,.85) !important;
+    color:var(--lavender-dark) !important;
+    border-radius:6px !important;
+    font-weight:600 !important;
+    line-height:1.2 !important;
+  }
+
+  #complete-care .lc-cta-strip{
+    margin-top:28px !important;
+    padding:12px 14px !important;
+    gap:10px !important;
+    border-radius:16px !important;
+  }
+  #complete-care .lc-btn-gold{
+    padding:12px 18px !important;font-size:13px !important;
+  }
 }
 @media(max-width:400px){
   .hero{
