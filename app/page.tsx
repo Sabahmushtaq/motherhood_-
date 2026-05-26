@@ -269,6 +269,8 @@ export default function Home() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const sliderRef = useRef<HTMLDivElement>(null);
   const [activeDot, setActiveDot] = useState<number>(0);
+  const [isDoctorsPaused, setIsDoctorsPaused] = useState<boolean>(false);
+  const [isReviewsPaused, setIsReviewsPaused] = useState<boolean>(false);
 
   // Inquiry Form State
   const [formData, setFormData] = useState({
@@ -408,7 +410,12 @@ export default function Home() {
           <img
             src="hero_mother_baby.png"
             alt="Mother holding her newborn baby"
-            className="w-full h-full object-cover object-[62%_32%] md:object-[55%_22%] block"
+            className="hidden md:block w-full h-full object-cover md:object-[55%_22%]"
+          />
+          <img
+            src="hero_mobile_banner.jpg"
+            alt="Serene mother hugging newborn baby"
+            className="block md:hidden w-full h-full object-cover object-center"
           />
         </div>
 
@@ -561,64 +568,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── COMPLETE CARE ─── */}
-      <section className="lifecycle-section" id="complete-care">
-        <div className="section-inner">
-          <div style={{ textAlign: "center" }}>
-            <div className="lc-heading-badge">
-              <div className="lc-pulse"></div>
-              <span>Complete Care &middot; Every Stage</span>
-            </div>
-            <div className="section-eyebrow" style={{ justifyContent: "center" }}><span className="eyebrow-line"></span> From First Heartbeat to First Breath</div>
-            <h2 className="section-title">We Complete Care &mdash; <em style={{ fontStyle: "normal", color: "var(--lavender-dark)" }}>Every Step of the Way</em></h2>
-            <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</p>
-          </div>
-
-          <div className="lc-track">
-            <div className="lc-steps">
-              {MATERNITY_STAGES.map((stage, idx) => (
-                <div key={stage.id} className="lc-step">
-                  <div className="lc-icon-ring">
-                    <div className="lc-baby-circle">
-                      {stage.renderIcon()}
-                    </div>
-                  </div>
-                  <div className="lc-connector-dot"></div>
-                  <div className={`lc-card ${idx % 2 === 1 ? "mt-[48px]" : ""}`}>
-                    <div className="lc-step-num">{stage.num}</div>
-                    <div className="lc-step-title">{stage.title}</div>
-                    <div className="lc-step-desc">{stage.desc}</div>
-                    <div className="lc-step-tag">{stage.tag}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lc-cta-strip mt-12 flex flex-col md:flex-row items-center justify-center gap-6 p-[18px_26px] bg-white/65 border border-[#ede0ee] rounded-[22px] backdrop-blur-lg">
-            <div className="lc-cta-badge flex items-center gap-3">
-              <div className="lc-badge-icon">
-                <svg viewBox="0 0 24 24"><path d="M12 20c4-3.3 7-6 7-10a4 4 0 0 0-7-2.5A4 4 0 0 0 5 10c0 4 3 6.7 7 10Z" stroke="currentColor" fill="none" strokeWidth="2" /></svg>
-              </div>
-              <div className="lc-badge-text text-left">
-                <strong>One Hospital. Every Stage.</strong>
-                <span>No referrals. No handoffs. Just continuous, expert care.</span>
-              </div>
-            </div>
-            <div className="lc-cta-badge flex items-center gap-3">
-              <div className="lc-badge-icon">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" strokeWidth="2" /><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-              </div>
-              <div className="lc-badge-text text-left">
-                <strong>24/7 Expert Support</strong>
-                <span>Senior OB &amp; NICU team available at every critical moment.</span>
-              </div>
-            </div>
-            <button onClick={() => scrollToSection("booking")} className="lc-btn-gold">Start Your Journey &rarr;</button>
-          </div>
-        </div>
-      </section>
-
       {/* ─── DOCTORS SECTION ─── */}
       <section className="doctors-section" id="doctors">
         <div className="section-inner">
@@ -628,7 +577,13 @@ export default function Home() {
 
         <div className="doctors-slider-wrap">
             <div className="doctors-track-outer">
-              <div className="doctors-slider" id="doctorsSlider" ref={sliderRef}>
+              <div
+                className="doctors-slider"
+                id="doctorsSlider"
+                ref={sliderRef}
+                style={{ animationPlayState: isDoctorsPaused ? "paused" : "running" }}
+                onClick={() => setIsDoctorsPaused(!isDoctorsPaused)}
+              >
                 {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
                   <div key={doc.id} className="doctor-card">
@@ -713,6 +668,64 @@ export default function Home() {
                 />
               ))}
             </div>
+        </div>
+      </section>
+
+      {/* ─── COMPLETE CARE ─── */}
+      <section className="lifecycle-section" id="complete-care">
+        <div className="section-inner">
+          <div style={{ textAlign: "center" }}>
+            <div className="lc-heading-badge">
+              <div className="lc-pulse"></div>
+              <span>Complete Care &middot; Every Stage</span>
+            </div>
+            <div className="section-eyebrow" style={{ justifyContent: "center" }}><span className="eyebrow-line"></span> From First Heartbeat to First Breath</div>
+            <h2 className="section-title">We Complete Care &mdash; <em style={{ fontStyle: "normal", color: "var(--lavender-dark)" }}>Every Step of the Way</em></h2>
+            <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</p>
+          </div>
+
+          <div className="lc-track">
+            <div className="lc-steps">
+              {MATERNITY_STAGES.map((stage, idx) => (
+                <div key={stage.id} className="lc-step">
+                  <div className="lc-icon-ring">
+                    <div className="lc-baby-circle">
+                      {stage.renderIcon()}
+                    </div>
+                  </div>
+                  <div className="lc-connector-dot"></div>
+                  <div className={`lc-card ${idx % 2 === 1 ? "mt-[48px]" : ""}`}>
+                    <div className="lc-step-num">{stage.num}</div>
+                    <div className="lc-step-title">{stage.title}</div>
+                    <div className="lc-step-desc">{stage.desc}</div>
+                    <div className="lc-step-tag">{stage.tag}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lc-cta-strip mt-12 flex flex-col md:flex-row items-center justify-center gap-6 p-[18px_26px] bg-white/65 border border-[#ede0ee] rounded-[22px] backdrop-blur-lg">
+            <div className="lc-cta-badge flex items-center gap-3">
+              <div className="lc-badge-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 20c4-3.3 7-6 7-10a4 4 0 0 0-7-2.5A4 4 0 0 0 5 10c0 4 3 6.7 7 10Z" stroke="currentColor" fill="none" strokeWidth="2" /></svg>
+              </div>
+              <div className="lc-badge-text text-left">
+                <strong>One Hospital. Every Stage.</strong>
+                <span>No referrals. No handoffs. Just continuous, expert care.</span>
+              </div>
+            </div>
+            <div className="lc-cta-badge flex items-center gap-3">
+              <div className="lc-badge-icon">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke="currentColor" fill="none" strokeWidth="2" /><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+              </div>
+              <div className="lc-badge-text text-left">
+                <strong>24/7 Expert Support</strong>
+                <span>Senior OB &amp; NICU team available at every critical moment.</span>
+              </div>
+            </div>
+            <button onClick={() => scrollToSection("booking")} className="lc-btn-gold">Start Your Journey &rarr;</button>
+          </div>
         </div>
       </section>
 
@@ -822,7 +835,11 @@ export default function Home() {
         </div>
 
         <div className="review-marquee">
-            <div className="review-row">
+            <div
+              className="review-row"
+              style={{ animationPlayState: isReviewsPaused ? "paused" : "running" }}
+              onClick={() => setIsReviewsPaused(!isReviewsPaused)}
+            >
               {/* Set 1 */}
               {PATIENT_REVIEWS.map((rev, idx) => (
                 <div key={`rev-${idx}`} className="review-card">
@@ -943,6 +960,7 @@ export default function Home() {
 
       <div className="sticky-mobile">
         <button onClick={() => scrollToSection("booking")} className="btn-primary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1 }}>Book Now</button>
+        <a href="tel:08069549251" className="btn-secondary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>Call Now</a>
       </div>
     </div>
   );
