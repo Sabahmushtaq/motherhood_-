@@ -624,8 +624,9 @@ export default function Home() {
         <div className="section-inner">
           <h2 className="section-title">Expert doctors, dedicated to your journey</h2>
           <p className="section-sub">Our Chennai team includes senior obstetricians, neonatologists, and maternal-fetal medicine specialists.</p>
+        </div>
 
-          <div className="doctors-slider-wrap">
+        <div className="doctors-slider-wrap">
             <div className="doctors-track-outer">
               <div className="doctors-slider" id="doctorsSlider" ref={sliderRef}>
                 {/* Original set */}
@@ -680,7 +681,6 @@ export default function Home() {
                 />
               ))}
             </div>
-          </div>
         </div>
       </section>
 
@@ -787,8 +787,9 @@ export default function Home() {
               </div>
             </div>
           </div>
+        </div>
 
-          <div className="review-marquee">
+        <div className="review-marquee">
             <div className="review-row">
               {PATIENT_REVIEWS.map((rev, idx) => (
                 <div key={`rev-${idx}`} className="review-card">
@@ -817,7 +818,6 @@ export default function Home() {
                 </div>
               ))}
             </div>
-          </div>
         </div>
       </section>
 

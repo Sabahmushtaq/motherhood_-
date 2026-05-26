@@ -459,7 +459,13 @@ nav{
   background:linear-gradient(180deg,var(--ivory) 0%,var(--pink-soft) 50%,var(--ivory) 100%);
   padding:var(--section-space) 52px;
 }
-.doctors-slider-wrap{position:relative;margin-top:30px;overflow:hidden;}
+.doctors-slider-wrap{
+  position:relative;
+  margin-top:30px;
+  overflow:hidden;
+  margin-left:-52px;
+  margin-right:-52px;
+}
 /* CSS infinite autoscroll track */
 .doctors-track-outer{
   overflow:hidden;
@@ -471,7 +477,9 @@ nav{
   width:max-content;
   animation:doctorsScroll 22s linear infinite;
 }
-.doctors-slider:hover{animation-play-state:paused;}
+@media (hover: hover) {
+  .doctors-slider:hover{animation-play-state:paused;}
+}
 @keyframes doctorsScroll{
   0%{transform:translateX(0);}
   100%{transform:translateX(-50%);}
@@ -555,9 +563,13 @@ nav{
   overflow:hidden;
   mask-image: none !important;
   -webkit-mask-image: none !important;
+  margin-left:-52px;
+  margin-right:-52px;
 }
 .review-row{display:flex;gap:13px;width:max-content;animation:scrollReviews 28s linear infinite;}
-.review-marquee:hover .review-row{animation-play-state:paused}
+@media (hover: hover) {
+  .review-marquee:hover .review-row{animation-play-state:paused;}
+}
 @keyframes scrollReviews{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 .review-card{
   width:270px;padding:15px 17px;flex-shrink:0;
@@ -685,6 +697,7 @@ footer a{color:var(--lavender-mid)}
     overflow:hidden;
   }
   .hero::before{display:none;}
+  .hero-decor{display:none !important;}
  
   /* Image fills top portion absolutely, no white gutters, starts flush under nav */
   .hero-bg{
@@ -694,6 +707,8 @@ footer a{color:var(--lavender-mid)}
     overflow:hidden;
     background:#e8d6f0;
     border-bottom:none;
+    filter: none !important;
+    backdrop-filter: none !important;
   }
   .hero-bg img{
     width:100%;
@@ -701,6 +716,7 @@ footer a{color:var(--lavender-mid)}
     object-fit:cover;
     object-position:62% 28%; /* keep mother + baby faces well in frame */
     display:block;
+    filter: none !important;
   }
   /* Light lavender scrim — allows desktop purple/rose text to be readable */
   .hero-bg::after{
@@ -813,6 +829,8 @@ footer a{color:var(--lavender-mid)}
   .lc-steps{grid-template-columns:repeat(3,1fr);gap:18px 0;}
   .lc-track::before{display:none}
   .doctors-section,.birthing-section,.reviews-section,.location-section,.final-cta{padding:var(--section-space) 18px;}
+  .doctors-slider-wrap{margin-left:-18px !important;margin-right:-18px !important;}
+  .review-marquee{margin-left:-18px !important;margin-right:-18px !important;}
 
 }
 @media(max-width:640px){
