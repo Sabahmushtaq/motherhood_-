@@ -881,16 +881,6 @@ export default function Home() {
       </div>
 
       <div className="sticky-mobile">
-        <a href="tel:08069549251" className="btn-secondary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1, textAlign: "center" }}>Call Helpline</a>
-        <a
-          href="https://wa.me/9108069549251?text=Hi%20Motherhood%20Hospitals%20Chennai%2C%20I%20am%20interested%20in%20learning%20more%20about%20your%20birthing%20packages."
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn-primary"
-          style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1, textAlign: "center", background: "#25d366", border: "none", boxShadow: "none" }}
-        >
-          WhatsApp
-        </a>
         <button onClick={() => scrollToSection("booking")} className="btn-primary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1 }}>Book Now</button>
       </div>
     </div>
