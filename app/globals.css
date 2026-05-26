@@ -708,7 +708,11 @@ footer a{color:var(--lavender-mid)}
     background:#e8d6f0;
     border-bottom:none;
     filter: none !important;
+    -webkit-filter: none !important;
     backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
   }
   .hero-bg img{
     width:100%;
@@ -717,10 +721,23 @@ footer a{color:var(--lavender-mid)}
     object-position:62% 28%; /* keep mother + baby faces well in frame */
     display:block;
     filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
   }
   /* Light lavender scrim — allows desktop purple/rose text to be readable */
   .hero-bg::after{
     display: none !important;
+    content: none !important;
+    background: transparent !important;
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
   }
  
   .hero-top-row{
@@ -742,8 +759,18 @@ footer a{color:var(--lavender-mid)}
     justify-content:flex-end;
     background:transparent !important;
     max-width:none;
+    filter: none !important;
+    -webkit-filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    mask-image: none !important;
+    -webkit-mask-image: none !important;
   }
-  .hero-content::after{display:none;}
+  .hero-content::after{
+    display: none !important;
+    content: none !important;
+    background: transparent !important;
+  }
 
   /* Mobile tagline: same desktop purple/rose gradient colors */
   .hero-tagline{
@@ -785,13 +812,17 @@ footer a{color:var(--lavender-mid)}
   .hero-right{
     position:relative; z-index:5;
     padding:18px 16px 28px;width:100%;
-    background:#ffffff;
+    background:#ffffff !important;
     margin-top:0;
     display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow: none !important;
   }
   .hero-right-inner{width:100%;max-width:480px;justify-content:center;}
   .hero-form-wrap{
     max-width:100%;padding:22px 20px 20px;margin:0 auto;
+    background:#ffffff !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
     box-shadow:0 8px 32px rgba(107,85,160,0.16),0 2px 8px rgba(107,85,160,0.06);
     border:1px solid rgba(216,206,240,0.85);
     border-radius:18px;
