@@ -8,6 +8,7 @@ interface Stage {
   id: string;
   num: string;
   title: string;
+  shortTitle: string;
   desc: string;
   tag: string;
   renderIcon: () => React.JSX.Element;
@@ -18,7 +19,6 @@ interface Doctor {
   name: string;
   qualifications: string;
   specialty: string;
-  experience: string;
   location: string;
   initials: string;
   bgGradient: string;
@@ -38,7 +38,6 @@ const CHENNAI_DOCTORS: Doctor[] = [
     name: "Dr. Premalatha S.",
     qualifications: "MD, DGO, FRCOG",
     specialty: "Senior Obstetrician & Gynaecologist",
-    experience: "Senior Specialist",
     location: "Alwarpet",
     initials: "PS",
     bgGradient: "linear-gradient(135deg,#9b85cc,#6b55a0)"
@@ -48,7 +47,6 @@ const CHENNAI_DOCTORS: Doctor[] = [
     name: "Dr. Kavitha R.",
     qualifications: "MD, DNB, FNB (MFM)",
     specialty: "Maternal-Fetal Medicine Specialist",
-    experience: "Fetal Medicine Specialist",
     location: "Alwarpet",
     initials: "KR",
     bgGradient: "linear-gradient(135deg,#e8a0b8,#b8364d)"
@@ -58,7 +56,6 @@ const CHENNAI_DOCTORS: Doctor[] = [
     name: "Dr. Anand Kumar",
     qualifications: "MD, DM (Neonatology)",
     specialty: "Senior Neonatologist",
-    experience: "Neonatal Care Expert",
     location: "Alwarpet",
     initials: "AK",
     bgGradient: "linear-gradient(135deg,#5478a0,#3d5a7a)"
@@ -68,7 +65,6 @@ const CHENNAI_DOCTORS: Doctor[] = [
     name: "Dr. Lakshmi V.",
     qualifications: "MD, DNB, MRCOG",
     specialty: "Consultant Obstetrician",
-    experience: "Maternity Consultant",
     location: "Alwarpet",
     initials: "LV",
     bgGradient: "linear-gradient(135deg,#e8a0b8,#b8364d)"
@@ -78,7 +74,6 @@ const CHENNAI_DOCTORS: Doctor[] = [
     name: "Dr. Rajesh M.",
     qualifications: "MD, DA, PDCC (Pain)",
     specialty: "Anaesthesiologist & Pain Specialist",
-    experience: "Pain Management Specialist",
     location: "Alwarpet",
     initials: "RM",
     bgGradient: "linear-gradient(135deg,#5478a0,#3d5a7a)"
@@ -129,6 +124,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-1",
     num: "Stage 01",
     title: "Pre-Pregnancy Planning",
+    shortTitle: "Pre-Pregnancy",
     desc: "Fertility counseling, health screening & nutrition guidance before conception begins.",
     tag: "🌿 Preparation",
     renderIcon: () => (
@@ -147,6 +143,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-2",
     num: "Stage 02",
     title: "First Trimester",
+    shortTitle: "1st Trimester",
     desc: "Early scans, blood tests, heartbeat monitoring & personalised care plans for weeks 1–12.",
     tag: "💖 Weeks 1–12",
     renderIcon: () => (
@@ -169,6 +166,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-3",
     num: "Stage 03",
     title: "Second Trimester",
+    shortTitle: "2nd Trimester",
     desc: "Anomaly scans, fetal growth tracking, gestational diabetes screening & antenatal classes.",
     tag: "👶 Weeks 13–26",
     renderIcon: () => (
@@ -191,6 +189,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-4",
     num: "Stage 04",
     title: "Third Trimester",
+    shortTitle: "3rd Trimester",
     desc: "Birth planning, fetal monitoring, NST tests & delivery readiness with our senior OB team.",
     tag: "🤰 Weeks 27–40",
     renderIcon: () => (
@@ -215,6 +214,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-5",
     num: "Stage 05",
     title: "Labor & Delivery",
+    shortTitle: "Labor",
     desc: "Private labor room, 24/7 specialist support, pain management & expert delivery team on standby.",
     tag: "✨ Birth Day",
     renderIcon: () => (
@@ -239,6 +239,7 @@ const MATERNITY_STAGES: Stage[] = [
     id: "stage-6",
     num: "Stage 06",
     title: "Newborn & Postpartum",
+    shortTitle: "Postpartum",
     desc: "Newborn assessment, NICU readiness, lactation support & postpartum recovery for mother.",
     tag: "🤸 After Birth",
     renderIcon: () => (
@@ -265,175 +266,254 @@ const MATERNITY_STAGES: Stage[] = [
   }
 ];
 
+const CAROUSEL_SET_COUNT = 4;
+const CAROUSEL_SCROLL_SPEED = 0.8;
+
+/** Keep duplicated carousel scroll looping — avoids stall when scrollLeft hits max */
+function normalizeCarouselScroll(track: HTMLElement, setCount = CAROUSEL_SET_COUNT) {
+  const setWidth = track.scrollWidth / setCount;
+  if (setWidth <= 0) return;
+
+  const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
+  let left = track.scrollLeft;
+
+  if (left >= maxScroll - 1) {
+    track.scrollLeft = left - setWidth;
+    return;
+  }
+
+  if (left >= setWidth * 2) {
+    track.scrollLeft = left - setWidth;
+  } else if (left < setWidth * 0.5) {
+    track.scrollLeft = left + setWidth;
+  }
+}
+
+function setupInfiniteCarouselScroll(
+  track: HTMLDivElement,
+  isPausedRef: React.MutableRefObject<boolean>,
+  isCardTarget: (target: EventTarget | null) => boolean
+) {
+  let animationFrameId = 0;
+  let isHovered = false;
+  let isTouched = false;
+
+  const initScroll = () => {
+    const setWidth = track.scrollWidth / CAROUSEL_SET_COUNT;
+    if (setWidth > 0) track.scrollLeft = setWidth;
+  };
+
+  const timer = window.setTimeout(initScroll, 100);
+  const resizeObserver = new ResizeObserver(() => {
+    normalizeCarouselScroll(track);
+  });
+  resizeObserver.observe(track);
+
+  const onScroll = () => normalizeCarouselScroll(track);
+
+  const step = () => {
+    if (!isHovered && !isTouched && !isPausedRef.current) {
+      track.scrollLeft += CAROUSEL_SCROLL_SPEED;
+      normalizeCarouselScroll(track);
+    }
+    animationFrameId = requestAnimationFrame(step);
+  };
+
+  const onMouseEnter = () => {
+    isHovered = true;
+  };
+  const onMouseLeave = () => {
+    isHovered = false;
+  };
+  const onTouchStart = (e: TouchEvent) => {
+    if (isCardTarget(e.target)) return;
+    isTouched = true;
+  };
+  const onTouchEnd = (e: TouchEvent) => {
+    if (isCardTarget(e.target)) return;
+    isTouched = false;
+  };
+
+  track.addEventListener("scroll", onScroll, { passive: true });
+  track.addEventListener("mouseenter", onMouseEnter);
+  track.addEventListener("mouseleave", onMouseLeave);
+  track.addEventListener("touchstart", onTouchStart, { passive: true });
+  track.addEventListener("touchend", onTouchEnd);
+
+  animationFrameId = requestAnimationFrame(step);
+
+  return () => {
+    window.clearTimeout(timer);
+    resizeObserver.disconnect();
+    cancelAnimationFrame(animationFrameId);
+    track.removeEventListener("scroll", onScroll);
+    track.removeEventListener("mouseenter", onMouseEnter);
+    track.removeEventListener("mouseleave", onMouseLeave);
+    track.removeEventListener("touchstart", onTouchStart);
+    track.removeEventListener("touchend", onTouchEnd);
+  };
+}
+
+function AnimatedStatNumber({
+  value,
+  suffix = "+",
+  duration = 2200,
+}: {
+  value: number;
+  suffix?: string;
+  duration?: number;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [count, setCount] = useState(0);
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || hasAnimated.current) return;
+        hasAnimated.current = true;
+
+        const start = performance.now();
+        const tick = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          setCount(Math.round(eased * value));
+          if (progress < 1) requestAnimationFrame(tick);
+          else setCount(value);
+        };
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.35 }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value, duration]);
+
+  const formatted =
+    value >= 1000 ? count.toLocaleString("en-IN") : String(count);
+
+  return (
+    <div ref={ref} className="stat-num">
+      {formatted}
+      {suffix}
+    </div>
+  );
+}
+
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const completeCareRef = useRef<HTMLElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const reviewsTrackRef = useRef<HTMLDivElement>(null);
-  const [activeDot, setActiveDot] = useState<number>(0);
-  const [isDoctorsPaused, setIsDoctorsPaused] = useState<boolean>(false);
-  const [isReviewsPaused, setIsReviewsPaused] = useState<boolean>(false);
+  const isDoctorsPausedByClickRef = useRef(false);
+  const doctorsPausedScrollRef = useRef(0);
+  const doctorsPausedIdRef = useRef<string | null>(null);
+  const [pausedDoctorId, setPausedDoctorId] = useState<string | null>(null);
 
-  const lastDoctorsToggleTime = useRef<number>(0);
-  const lastReviewsToggleTime = useRef<number>(0);
+  const isReviewsPausedByClickRef = useRef(false);
+  const reviewsPausedScrollRef = useRef(0);
+  const reviewsPausedIdRef = useRef<string | null>(null);
+  const [pausedReviewId, setPausedReviewId] = useState<string | null>(null);
 
-  const toggleDoctorsPause = () => {
-    const now = Date.now();
-    if (now - lastDoctorsToggleTime.current < 300) return;
-    lastDoctorsToggleTime.current = now;
-    setIsDoctorsPaused((prev) => !prev);
+  const toggleCarouselPause = (
+    track: HTMLDivElement | null,
+    itemId: string,
+    isPausedRef: React.MutableRefObject<boolean>,
+    scrollRef: React.MutableRefObject<number>,
+    idRef: React.MutableRefObject<string | null>,
+    setPausedId: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    if (!track) return;
+
+    if (isPausedRef.current && idRef.current === itemId) {
+      track.scrollLeft = scrollRef.current;
+      isPausedRef.current = false;
+      idRef.current = null;
+      setPausedId(null);
+      return;
+    }
+
+    scrollRef.current = track.scrollLeft;
+    isPausedRef.current = true;
+    idRef.current = itemId;
+    setPausedId(itemId);
   };
 
-  const toggleReviewsPause = () => {
-    const now = Date.now();
-    if (now - lastReviewsToggleTime.current < 300) return;
-    lastReviewsToggleTime.current = now;
-    setIsReviewsPaused((prev) => !prev);
+  const handleDoctorCardClick = (docId: string) => {
+    toggleCarouselPause(
+      sliderRef.current,
+      docId,
+      isDoctorsPausedByClickRef,
+      doctorsPausedScrollRef,
+      doctorsPausedIdRef,
+      setPausedDoctorId
+    );
   };
 
-  // Autoscroll & infinite wrap for Doctors track
+  const handleReviewCardClick = (reviewId: string) => {
+    toggleCarouselPause(
+      reviewsTrackRef.current,
+      reviewId,
+      isReviewsPausedByClickRef,
+      reviewsPausedScrollRef,
+      reviewsPausedIdRef,
+      setPausedReviewId
+    );
+  };
+
+  const isCarouselCardTarget = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return false;
+    return !!target.closest(".doctor-card, .review-card");
+  };
+
+  /* Mobile Complete Care wheel — one-shot reveal when scrolled into view */
+  useEffect(() => {
+    const section = completeCareRef.current;
+    if (!section) return;
+    if (!window.matchMedia("(max-width: 900px)").matches) return;
+
+    const markReady = () => section.classList.add("lc-wheel-ready");
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        markReady();
+        observer.disconnect();
+      },
+      { threshold: 0.15, rootMargin: "0px 0px 10% 0px" }
+    );
+
+    observer.observe(section);
+    const fallbackTimer = window.setTimeout(markReady, 800);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(fallbackTimer);
+    };
+  }, []);
+
   useEffect(() => {
     const track = sliderRef.current;
     if (!track) return;
+    return setupInfiniteCarouselScroll(
+      track,
+      isDoctorsPausedByClickRef,
+      isCarouselCardTarget
+    );
+  }, []);
 
-    let animationFrameId: number;
-    let isHovered = false;
-    let isTouched = false;
-
-    const initScroll = () => {
-      if (track.scrollWidth > 0) {
-        track.scrollLeft = track.scrollWidth / 4;
-      }
-    };
-    
-    const timer = setTimeout(initScroll, 100);
-
-    let scrollPos = track.scrollLeft;
-
-    const handleScroll = () => {
-      const oneSetWidth = track.scrollWidth / 4;
-      if (oneSetWidth <= 0) return;
-      if (track.scrollLeft >= oneSetWidth * 2.5) {
-        track.scrollLeft -= oneSetWidth;
-      } else if (track.scrollLeft <= oneSetWidth * 0.5) {
-        track.scrollLeft += oneSetWidth;
-      }
-
-      // Keep scrollPos float variable in sync on scrollLeft changes (manual or automatic wraps)
-      scrollPos = track.scrollLeft;
-
-      // Calculate active dot index dynamically from current scroll position
-      const relativeScroll = track.scrollLeft - oneSetWidth;
-      const cardWidth = 226;
-      const currentIdx = Math.round(relativeScroll / cardWidth);
-      const positiveIdx = ((currentIdx % CHENNAI_DOCTORS.length) + CHENNAI_DOCTORS.length) % CHENNAI_DOCTORS.length;
-      
-      setActiveDot((prev) => {
-        if (prev !== positiveIdx) {
-          return positiveIdx;
-        }
-        return prev;
-      });
-    };
-
-    const step = () => {
-      if (!isHovered && !isTouched && !isDoctorsPaused) {
-        scrollPos += 0.8;
-        track.scrollLeft = Math.round(scrollPos);
-      } else {
-        scrollPos = track.scrollLeft;
-      }
-      animationFrameId = requestAnimationFrame(step);
-    };
-
-    const onMouseEnter = () => { isHovered = true; };
-    const onMouseLeave = () => { isHovered = false; };
-    const onTouchStart = () => { isTouched = true; };
-    const onTouchEnd = () => { isTouched = false; };
-
-    track.addEventListener("scroll", handleScroll, { passive: true });
-    track.addEventListener("mouseenter", onMouseEnter);
-    track.addEventListener("mouseleave", onMouseLeave);
-    track.addEventListener("touchstart", onTouchStart, { passive: true });
-    track.addEventListener("touchend", onTouchEnd);
-
-    animationFrameId = requestAnimationFrame(step);
-
-    return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(animationFrameId);
-      track.removeEventListener("scroll", handleScroll);
-      track.removeEventListener("mouseenter", onMouseEnter);
-      track.removeEventListener("mouseleave", onMouseLeave);
-      track.removeEventListener("touchstart", onTouchStart);
-      track.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [isDoctorsPaused]);
-
-  // Autoscroll & infinite wrap for Reviews track
   useEffect(() => {
     const track = reviewsTrackRef.current;
     if (!track) return;
-
-    let animationFrameId: number;
-    let isHovered = false;
-    let isTouched = false;
-
-    const initScroll = () => {
-      if (track.scrollWidth > 0) {
-        track.scrollLeft = track.scrollWidth / 4;
-      }
-    };
-    
-    const timer = setTimeout(initScroll, 100);
-
-    let scrollPos = track.scrollLeft;
-
-    const handleScroll = () => {
-      const oneSetWidth = track.scrollWidth / 4;
-      if (oneSetWidth <= 0) return;
-      if (track.scrollLeft >= oneSetWidth * 2.5) {
-        track.scrollLeft -= oneSetWidth;
-      } else if (track.scrollLeft <= oneSetWidth * 0.5) {
-        track.scrollLeft += oneSetWidth;
-      }
-      
-      // Keep scrollPos float variable in sync with scrollLeft
-      scrollPos = track.scrollLeft;
-    };
-
-    const step = () => {
-      if (!isHovered && !isTouched && !isReviewsPaused) {
-        scrollPos += 0.8;
-        track.scrollLeft = Math.round(scrollPos);
-      } else {
-        scrollPos = track.scrollLeft;
-      }
-      animationFrameId = requestAnimationFrame(step);
-    };
-
-    const onMouseEnter = () => { isHovered = true; };
-    const onMouseLeave = () => { isHovered = false; };
-    const onTouchStart = () => { isTouched = true; };
-    const onTouchEnd = () => { isTouched = false; };
-
-    track.addEventListener("scroll", handleScroll, { passive: true });
-    track.addEventListener("mouseenter", onMouseEnter);
-    track.addEventListener("mouseleave", onMouseLeave);
-    track.addEventListener("touchstart", onTouchStart, { passive: true });
-    track.addEventListener("touchend", onTouchEnd);
-
-    animationFrameId = requestAnimationFrame(step);
-
-    return () => {
-      clearTimeout(timer);
-      cancelAnimationFrame(animationFrameId);
-      track.removeEventListener("scroll", handleScroll);
-      track.removeEventListener("mouseenter", onMouseEnter);
-      track.removeEventListener("mouseleave", onMouseLeave);
-      track.removeEventListener("touchstart", onTouchStart);
-      track.removeEventListener("touchend", onTouchEnd);
-    };
-  }, [isReviewsPaused]);
+    return setupInfiniteCarouselScroll(
+      track,
+      isReviewsPausedByClickRef,
+      isCarouselCardTarget
+    );
+  }, []);
 
   // Inquiry Form State
   const [formData, setFormData] = useState({
@@ -462,8 +542,6 @@ export default function Home() {
     handleScroll();
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  // Dot index is now synchronized dynamically via handleScroll on the slider track.
 
   // Form Handlers
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -523,18 +601,8 @@ export default function Home() {
     }
   };
 
-  const scrollSlider = (direction: "left" | "right") => {
-    if (sliderRef.current) {
-      const scrollAmount = 240;
-      sliderRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth"
-      });
-    }
-  };
-
   return (
-    <div className="relative min-h-screen flex flex-col font-sans select-none antialiased bg-[#faf8fc]">
+    <div className="page-shell relative min-h-screen flex flex-col font-sans select-none antialiased bg-[#faf8fc]">
       {/* Scroll Progress Indicator */}
       <div
         id="page-progress-bar"
@@ -564,15 +632,14 @@ export default function Home() {
         </div>
         {/* Full-bleed background image */}
         <div className="hero-bg">
-          <img
-            src="hero_mother_baby.png"
-            alt="Mother holding her newborn baby"
-            className="hero-img-desktop w-full h-full object-cover md:object-[55%_22%]"
-          />
-          <img
-            src="hero_mobile_banner.jpg"
-            alt="Serene mother hugging newborn baby"
-            className="hero-img-mobile w-full h-full object-cover object-center"
+          <Image
+            src="/hero_main.jpg"
+            alt="Mother gently holding her newborn baby"
+            fill
+            priority
+            quality={95}
+            sizes="(max-width: 900px) 100vw, 92vw"
+            className="hero-img"
           />
         </div>
 
@@ -580,9 +647,8 @@ export default function Home() {
           {/* LEFT: Offer text overlaid on image */}
           <div className="hero-content">
             <div className="hero-tagline">
-              <span>Expert </span>
-              <em>Maternity Care</em>
-              <span> in Chennai<br />from your first visit to delivery.</span>
+              Expert <em>Maternity Care</em> in Chennai<br />
+              from your first visit to delivery.
             </div>
             <div className="hero-offer-big">Avail <span className="amt">₹10,000/-</span> OFF</div>
             <div className="hero-offer-big" style={{ marginTop: "2px" }}>on your final bill and</div>
@@ -671,8 +737,14 @@ export default function Home() {
       {/* ─── STATS BAR ─── */}
       <div className="stats-bar">
         <div className="stats-inner">
-          <div className="stat-item"><div className="stat-num">50,000+</div><div className="stat-label">Mothers supported</div></div>
-          <div className="stat-item"><div className="stat-num">15+</div><div className="stat-label">Specialist doctors</div></div>
+          <div className="stat-item">
+            <AnimatedStatNumber value={50000} />
+            <div className="stat-label">Mothers supported</div>
+          </div>
+          <div className="stat-item">
+            <AnimatedStatNumber value={15} />
+            <div className="stat-label">Specialist doctors</div>
+          </div>
           <div className="stat-item"><div className="stat-num">24/7</div><div className="stat-label">Emergency &amp; labor care</div></div>
           <div className="stat-item"><div className="stat-num">NICU</div><div className="stat-label">Advanced newborn support</div></div>
         </div>
@@ -726,11 +798,7 @@ export default function Home() {
       </section>
 
       {/* ─── DOCTORS SECTION ─── */}
-      <section 
-        className="doctors-section" 
-        id="doctors"
-        onClick={() => setIsDoctorsPaused(false)}
-      >
+      <section className="doctors-section" id="doctors">
         <div className="section-inner">
           <h2 className="section-title">Expert doctors, dedicated to your journey</h2>
           <p className="section-sub">Our Chennai team includes senior obstetricians, neonatologists, and maternal-fetal medicine specialists.</p>
@@ -741,20 +809,26 @@ export default function Home() {
               className="doctors-track-outer"
               ref={sliderRef}
             >
-              <div
-                className="doctors-slider"
-                id="doctorsSlider"
-                onClick={(e) => {
-                  const target = e.target as HTMLElement;
-                  if (target.closest('.doctor-card')) {
-                    e.stopPropagation();
-                    setIsDoctorsPaused((prev) => !prev);
-                  }
-                }}
-              >
+              <div className="doctors-slider">
                 {/* Set 1 */}
                 {CHENNAI_DOCTORS.map((doc) => (
-                  <div key={doc.id} className="doctor-card">
+                  <div
+                    key={doc.id}
+                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDoctorCardClick(doc.id);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleDoctorCardClick(doc.id);
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={pausedDoctorId === doc.id}
+                  >
                     <div className="doctor-photo">
                       <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
                         {doc.initials}
@@ -764,13 +838,21 @@ export default function Home() {
                     <div className="doctor-qual">{doc.qualifications}</div>
                     <div className="doctor-type">{doc.specialty}</div>
                     <div className="doctor-location">📍 {doc.location}</div>
-                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
                   </div>
                 ))}
 
                 {/* Set 2 */}
                 {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div key={`${doc.id}-dup-${idx}`} className="doctor-card" aria-hidden="true">
+                  <div
+                    key={`${doc.id}-dup-${idx}`}
+                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDoctorCardClick(doc.id);
+                    }}
+                    aria-hidden="true"
+                  >
                     <div className="doctor-photo">
                       <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
                         {doc.initials}
@@ -780,13 +862,21 @@ export default function Home() {
                     <div className="doctor-qual">{doc.qualifications}</div>
                     <div className="doctor-type">{doc.specialty}</div>
                     <div className="doctor-location">📍 {doc.location}</div>
-                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
                   </div>
                 ))}
 
                 {/* Set 3 */}
                 {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div key={`${doc.id}-dup3-${idx}`} className="doctor-card" aria-hidden="true">
+                  <div
+                    key={`${doc.id}-dup3-${idx}`}
+                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDoctorCardClick(doc.id);
+                    }}
+                    aria-hidden="true"
+                  >
                     <div className="doctor-photo">
                       <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
                         {doc.initials}
@@ -796,13 +886,21 @@ export default function Home() {
                     <div className="doctor-qual">{doc.qualifications}</div>
                     <div className="doctor-type">{doc.specialty}</div>
                     <div className="doctor-location">📍 {doc.location}</div>
-                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
                   </div>
                 ))}
 
                 {/* Set 4 */}
                 {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div key={`${doc.id}-dup4-${idx}`} className="doctor-card" aria-hidden="true">
+                  <div
+                    key={`${doc.id}-dup4-${idx}`}
+                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDoctorCardClick(doc.id);
+                    }}
+                    aria-hidden="true"
+                  >
                     <div className="doctor-photo">
                       <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
                         {doc.initials}
@@ -812,38 +910,16 @@ export default function Home() {
                     <div className="doctor-qual">{doc.qualifications}</div>
                     <div className="doctor-type">{doc.specialty}</div>
                     <div className="doctor-location">📍 {doc.location}</div>
-                    <button onClick={() => scrollToSection("booking")} className="doctor-btn">Book Appointment</button>
+                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="slider-dots" id="docDots">
-              {CHENNAI_DOCTORS.map((_, idx) => (
-                <button
-                  key={idx}
-                  className={`slider-dot ${idx === activeDot ? "active" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setActiveDot(idx);
-                    if (sliderRef.current) {
-                      const oneSetWidth = sliderRef.current.scrollWidth / 4;
-                      sliderRef.current.scrollTo({
-                        left: oneSetWidth + idx * 226,
-                        behavior: "smooth"
-                      });
-                    }
-                    setIsDoctorsPaused((prev) => !prev);
-                  }}
-                  aria-label={`Doctor ${idx + 1}`}
-                />
-              ))}
             </div>
         </div>
       </section>
 
       {/* ─── COMPLETE CARE ─── */}
-      <section className="lifecycle-section" id="complete-care">
+      <section ref={completeCareRef} className="lifecycle-section" id="complete-care">
         <div className="section-inner">
           <div style={{ textAlign: "center" }}>
             <div className="lc-heading-badge">
@@ -860,14 +936,22 @@ export default function Home() {
               {MATERNITY_STAGES.map((stage, idx) => (
                 <div key={stage.id} className="lc-step">
                   <div className="lc-icon-ring">
-                    <div className="lc-baby-circle">
-                      {stage.renderIcon()}
+                    <div className="lc-icon-stack">
+                      <div className="lc-orbit-spin" aria-hidden="true">
+                        <span className="lc-orbit-dot" />
+                      </div>
+                      <div className="lc-baby-circle">
+                        {stage.renderIcon()}
+                      </div>
                     </div>
                   </div>
                   <div className="lc-connector-dot"></div>
                   <div className={`lc-card ${idx % 2 === 1 ? "mt-[48px]" : ""}`}>
                     <div className="lc-step-num">{stage.num}</div>
-                    <div className="lc-step-title">{stage.title}</div>
+                    <div className="lc-step-title">
+                      <span className="lc-title-desktop">{stage.title}</span>
+                      <span className="lc-title-mobile">{stage.shortTitle}</span>
+                    </div>
                     <div className="lc-step-desc">{stage.desc}</div>
                     <div className="lc-step-tag">{stage.tag}</div>
                   </div>
@@ -900,77 +984,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── PACKAGE DETAILS SECTION ─── */}
-      <section className="birthing-section" id="birthing">
-        <div className="section-inner">
-          <h2 className="section-title">Best Birthing Package in Chennai</h2>
-          <p className="section-sub">Everything you and your baby need &mdash; from first trimester through delivery and recovery, all in one transparent, comprehensive package.</p>
-
-          <div className="birthing-grid">
-            <div>
-              <div className="birthing-bullets">
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>Full Antenatal Support</strong>
-                    <span>Consultations, scans, and monitoring from your first trimester through delivery planning.</span>
-                  </div>
-                </div>
-
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>Labor Room and Delivery</strong>
-                    <span>Private delivery room with 24/7 senior obstetrician and trained midwife support.</span>
-                  </div>
-                </div>
-
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>Newborn and NICU Backup</strong>
-                    <span>Immediate newborn assessment, NICU level III readiness for high-risk or premature situations.</span>
-                  </div>
-                </div>
-
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>Postpartum Recovery</strong>
-                    <span>Post-delivery observation, lactation guidance, and discharge support for mother and baby.</span>
-                  </div>
-                </div>
-
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>Transparent Billing</strong>
-                    <span>Clear package costs upfront &mdash; no hidden charges, no last-minute surprises.</span>
-                  </div>
-                </div>
-
-                <div className="birthing-bullet">
-                  <div className="tick">✓</div>
-                  <div>
-                    <strong>High-Risk Pregnancy Care</strong>
-                    <span>Dedicated protocols for gestational diabetes, hypertension, twins, and complex deliveries.</span>
-                  </div>
-                </div>
-              </div>
-              <button onClick={() => scrollToSection("booking")} className="btn-primary mt-4">Book Free Consultation</button>
-            </div>
-
-            {/* Doctor image panel */}
-            <div className="relative rounded-[20px] overflow-hidden border border-[#ede0ee] shadow-md bg-gradient-to-br from-[#fce8f4] to-[#ede8f5] h-full min-h-[360px]">
-              <img
-                src="doctor_anand.png"
-                alt="Expert Doctor at Motherhood Hospital"
-                className="w-full h-full object-cover object-[center_top] block min-h-[360px]"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ─── PATIENT REVIEWS ─── */}
       <section className="reviews-section" id="reviews">
@@ -1004,19 +1017,28 @@ export default function Home() {
           className="review-marquee"
           ref={reviewsTrackRef}
         >
-            <div 
-              className="review-row"
-              onClick={(e) => {
-                const target = e.target as HTMLElement;
-                if (target.closest('.review-card')) {
-                  e.stopPropagation();
-                  setIsReviewsPaused((prev) => !prev);
-                }
-              }}
-            >
+            <div className="review-row">
               {/* Set 1 */}
-              {PATIENT_REVIEWS.map((rev, idx) => (
-                <div key={`rev-${idx}`} className="review-card">
+              {PATIENT_REVIEWS.map((rev, idx) => {
+                const reviewId = `review-${rev.name}`;
+                return (
+                <div
+                  key={`rev-${idx}`}
+                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReviewCardClick(reviewId);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={pausedReviewId === reviewId}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      handleReviewCardClick(reviewId);
+                    }
+                  }}
+                >
                   <div className="review-top">
                     <div>
                       <div className="review-name">{rev.name}</div>
@@ -1026,11 +1048,21 @@ export default function Home() {
                   </div>
                   <p>{rev.text}</p>
                 </div>
-              ))}
+              );})}
 
               {/* Set 2 */}
-              {PATIENT_REVIEWS.map((rev, idx) => (
-                <div key={`rev-dup-${idx}`} className="review-card" aria-hidden="true">
+              {PATIENT_REVIEWS.map((rev, idx) => {
+                const reviewId = `review-${rev.name}`;
+                return (
+                <div
+                  key={`rev-dup-${idx}`}
+                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReviewCardClick(reviewId);
+                  }}
+                  aria-hidden="true"
+                >
                   <div className="review-top">
                     <div>
                       <div className="review-name">{rev.name}</div>
@@ -1040,11 +1072,21 @@ export default function Home() {
                   </div>
                   <p>{rev.text}</p>
                 </div>
-              ))}
+              );})}
 
               {/* Set 3 */}
-              {PATIENT_REVIEWS.map((rev, idx) => (
-                <div key={`rev-dup3-${idx}`} className="review-card" aria-hidden="true">
+              {PATIENT_REVIEWS.map((rev, idx) => {
+                const reviewId = `review-${rev.name}`;
+                return (
+                <div
+                  key={`rev-dup3-${idx}`}
+                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReviewCardClick(reviewId);
+                  }}
+                  aria-hidden="true"
+                >
                   <div className="review-top">
                     <div>
                       <div className="review-name">{rev.name}</div>
@@ -1054,11 +1096,21 @@ export default function Home() {
                   </div>
                   <p>{rev.text}</p>
                 </div>
-              ))}
+              );})}
 
               {/* Set 4 */}
-              {PATIENT_REVIEWS.map((rev, idx) => (
-                <div key={`rev-dup4-${idx}`} className="review-card" aria-hidden="true">
+              {PATIENT_REVIEWS.map((rev, idx) => {
+                const reviewId = `review-${rev.name}`;
+                return (
+                <div
+                  key={`rev-dup4-${idx}`}
+                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleReviewCardClick(reviewId);
+                  }}
+                  aria-hidden="true"
+                >
                   <div className="review-top">
                     <div>
                       <div className="review-name">{rev.name}</div>
@@ -1068,7 +1120,7 @@ export default function Home() {
                   </div>
                   <p>{rev.text}</p>
                 </div>
-              ))}
+              );})}
             </div>
         </div>
       </section>
@@ -1133,8 +1185,8 @@ export default function Home() {
       </div>
 
       <div className="sticky-mobile">
-        <button onClick={() => scrollToSection("booking")} className="btn-primary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1 }}>Book Now</button>
-        <a href="tel:08069549251" className="btn-secondary" style={{ padding: "11px", borderRadius: "8px", fontSize: "13.5px", flex: 1, display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}>Call Now</a>
+        <button type="button" onClick={() => scrollToSection("booking")} className="btn-primary">Book Now</button>
+        <a href="tel:08069549251" className="btn-secondary">Call Now</a>
       </div>
     </div>
   );
