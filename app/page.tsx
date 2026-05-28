@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import { assetUrl } from "@/lib/site";
 
 // Types
@@ -633,14 +632,13 @@ export default function Home() {
         </div>
         {/* Full-bleed background image */}
         <div className="hero-bg">
-          <Image
+          {/* Plain img: reliable paths on static export + GitHub Pages basePath */}
+          <img
             src={assetUrl("/hero_main.jpg")}
             alt="Mother gently holding her newborn baby"
-            fill
-            priority
-            quality={95}
-            sizes="(max-width: 900px) 100vw, 92vw"
             className="hero-img"
+            fetchPriority="high"
+            decoding="async"
           />
         </div>
 

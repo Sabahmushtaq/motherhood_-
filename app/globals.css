@@ -164,6 +164,8 @@ nav{
 }
 .hero-bg img,
 .hero-img{
+  position:absolute;
+  inset:0;
   width:100% !important;
   height:100% !important;
   object-fit:cover;
@@ -962,7 +964,8 @@ footer a{color:var(--lavender-mid)}
     background:var(--hero-wall-dark);
     border-bottom:none;
   }
-  .hero-bg .hero-img{
+  .hero-bg .hero-img,
+  .hero-bg img.hero-img{
     position:absolute !important;
     inset:0;
     width:100% !important;
