@@ -926,7 +926,6 @@ export default function Home() {
               <div className="lc-pulse"></div>
               <span>Complete Care &middot; Every Stage</span>
             </div>
-            <div className="section-eyebrow mobile-hide" style={{ justifyContent: "center" }}><span className="eyebrow-line"></span> From First Heartbeat to First Breath</div>
             <h2 className="section-title">We Complete Care &mdash; <em style={{ fontStyle: "normal", color: "var(--lavender-dark)" }}>Every Step of the Way</em></h2>
             <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. <span className="mobile-hide-inline">We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</span></p>
           </div>
@@ -960,7 +959,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="lc-cta-strip mt-12 flex flex-col md:flex-row items-center justify-center gap-6 p-[18px_26px] bg-white/65 border border-[#ede0ee] rounded-[22px] backdrop-blur-lg">
+          <div className="lc-cta-strip">
             <div className="lc-cta-badge flex items-center gap-3">
               <div className="lc-badge-icon">
                 <svg viewBox="0 0 24 24"><path d="M12 20c4-3.3 7-6 7-10a4 4 0 0 0-7-2.5A4 4 0 0 0 5 10c0 4 3 6.7 7 10Z" stroke="currentColor" fill="none" strokeWidth="2" /></svg>
@@ -979,7 +978,7 @@ export default function Home() {
                 <span>Senior OB &amp; NICU team available at every critical moment.</span>
               </div>
             </div>
-            <button onClick={() => scrollToSection("booking")} className="lc-btn-gold">Start Your Journey &rarr;</button>
+            <button type="button" onClick={() => scrollToSection("booking")} className="lc-btn-gold">Start Your Journey &rarr;</button>
           </div>
         </div>
       </section>
@@ -1128,7 +1127,6 @@ export default function Home() {
       {/* ─── CONTACT & LOCATION ─── */}
       <section className="location-section" id="location">
         <div className="section-inner">
-          <div className="section-eyebrow"><span className="eyebrow-line"></span> Contact and location</div>
           <h2 className="section-title">Motherhood Hospital Chennai</h2>
           <p className="section-sub">Visit us or speak to the team directly &mdash; we are open 24 hours for all maternity and emergency needs.</p>
 
