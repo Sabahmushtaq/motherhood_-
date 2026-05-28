@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
 import "./globals.css";
+import { assetUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Best Birthing Package in Chennai | Motherhood Hospitals",
@@ -11,8 +13,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const htmlStyle = {
+    ["--complete-care-foot-bg" as string]: `url("${assetUrl("/complete-care-foot-accent.png")}")`,
+  } satisfies CSSProperties;
+
   return (
-    <html lang="en" className="h-full antialiased">
+    <html lang="en" className="h-full antialiased" style={htmlStyle}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

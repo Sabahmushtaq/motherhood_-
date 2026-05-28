@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { assetUrl } from "@/lib/site";
 
 // Types
 interface Stage {
@@ -613,7 +614,7 @@ export default function Home() {
       {/* ─── NAV ─── */}
       <nav>
         <a href="#home" className="logo-wrap" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <img className="logo-img" src="motherhood_logo.png" alt="Motherhood Women & Children's Hospital" />
+          <img className="logo-img" src={assetUrl("/motherhood_logo.png")} alt="Motherhood Women & Children's Hospital" />
         </a>
         <div className="nav-right">
           <a href="tel:08069549251" className="nav-phone">
@@ -633,7 +634,7 @@ export default function Home() {
         {/* Full-bleed background image */}
         <div className="hero-bg">
           <Image
-            src="/hero_main.jpg"
+            src={assetUrl("/hero_main.jpg")}
             alt="Mother gently holding her newborn baby"
             fill
             priority

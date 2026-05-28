@@ -1578,7 +1578,7 @@ section { padding-top: 26px !important; padding-bottom: 26px !important; }
   bottom:0;
   width:min(480px,38vw);
   height:min(340px,36vh);
-  background:url("/complete-care-foot-accent.png") no-repeat right bottom/contain;
+  background:var(--complete-care-foot-bg) no-repeat right bottom/contain;
   opacity:0.48;
   pointer-events:none;
   -webkit-mask-image:radial-gradient(ellipse 88% 82% at 86% 92%,#000 25%,rgba(0,0,0,.88) 50%,transparent 76%);
