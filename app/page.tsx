@@ -275,7 +275,7 @@ function normalizeCarouselScroll(track: HTMLElement, setCount = CAROUSEL_SET_COU
   if (setWidth <= 0) return;
 
   const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-  let left = track.scrollLeft;
+  const left = track.scrollLeft;
 
   if (left >= maxScroll - 1) {
     track.scrollLeft = left - setWidth;
@@ -309,7 +309,10 @@ function setupInfiniteCarouselScroll(
   });
   resizeObserver.observe(track);
 
-  const onScroll = () => normalizeCarouselScroll(track);
+  const onScroll = () => {
+    if (isPausedRef.current) return;
+    normalizeCarouselScroll(track);
+  };
 
   const step = () => {
     if (!isHovered && !isTouched && !isPausedRef.current) {
@@ -333,12 +336,16 @@ function setupInfiniteCarouselScroll(
     if (isCardTarget(e.target)) return;
     isTouched = false;
   };
+  const onTouchCancel = () => {
+    isTouched = false;
+  };
 
   track.addEventListener("scroll", onScroll, { passive: true });
   track.addEventListener("mouseenter", onMouseEnter);
   track.addEventListener("mouseleave", onMouseLeave);
   track.addEventListener("touchstart", onTouchStart, { passive: true });
   track.addEventListener("touchend", onTouchEnd);
+  track.addEventListener("touchcancel", onTouchCancel);
 
   animationFrameId = requestAnimationFrame(step);
 
@@ -351,6 +358,7 @@ function setupInfiniteCarouselScroll(
     track.removeEventListener("mouseleave", onMouseLeave);
     track.removeEventListener("touchstart", onTouchStart);
     track.removeEventListener("touchend", onTouchEnd);
+    track.removeEventListener("touchcancel", onTouchCancel);
   };
 }
 
@@ -404,19 +412,142 @@ function AnimatedStatNumber({
   );
 }
 
+function DoctorCarouselCard({
+  doc,
+  setIndex,
+  isPaused,
+  onTap,
+  onActivate,
+  onBook,
+}: {
+  doc: Doctor;
+  setIndex: number;
+  isPaused: boolean;
+  onTap: (id: string, e: React.SyntheticEvent) => void;
+  onActivate: (id: string) => void;
+  onBook: () => void;
+}) {
+  const isPrimary = setIndex === 0;
+
+  return (
+    <div
+      className={`doctor-card${isPaused ? " doctor-card-paused" : ""}`}
+      onClick={(e) => onTap(doc.id, e)}
+      onTouchEnd={(e) => onTap(doc.id, e)}
+      onKeyDown={
+        isPrimary
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onActivate(doc.id);
+              }
+            }
+          : undefined
+      }
+      role={isPrimary ? "button" : undefined}
+      tabIndex={isPrimary ? 0 : undefined}
+      aria-pressed={isPrimary ? isPaused : undefined}
+      aria-hidden={isPrimary ? undefined : true}
+    >
+      <div className="doctor-photo">
+        <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
+          {doc.initials}
+        </div>
+      </div>
+      <div className="doctor-name">{doc.name}</div>
+      <div className="doctor-qual">{doc.qualifications}</div>
+      <div className="doctor-type">{doc.specialty}</div>
+      <div className="doctor-location">📍 {doc.location}</div>
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          onBook();
+        }}
+        className="doctor-btn"
+      >
+        Book Appointment
+      </button>
+    </div>
+  );
+}
+
+function ReviewCarouselCard({
+  review,
+  reviewId,
+  setIndex,
+  isPaused,
+  onTap,
+  onActivate,
+}: {
+  review: Review;
+  reviewId: string;
+  setIndex: number;
+  isPaused: boolean;
+  onTap: (id: string, e: React.SyntheticEvent) => void;
+  onActivate: (id: string) => void;
+}) {
+  const isPrimary = setIndex === 0;
+
+  return (
+    <div
+      className={`review-card${isPaused ? " review-card-paused" : ""}`}
+      onClick={(e) => onTap(reviewId, e)}
+      onTouchEnd={(e) => onTap(reviewId, e)}
+      onKeyDown={
+        isPrimary
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onActivate(reviewId);
+              }
+            }
+          : undefined
+      }
+      role={isPrimary ? "button" : undefined}
+      tabIndex={isPrimary ? 0 : undefined}
+      aria-pressed={isPrimary ? isPaused : undefined}
+      aria-hidden={isPrimary ? undefined : true}
+    >
+      <div className="review-top">
+        <div>
+          <div className="review-name">{review.name}</div>
+          <div className="review-meta">{review.meta}</div>
+        </div>
+        <div className="review-stars">{review.stars}</div>
+      </div>
+      <p>{review.text}</p>
+    </div>
+  );
+}
+
+function renderCarouselSets<T>(
+  setCount: number,
+  items: T[],
+  renderItem: (item: T, setIndex: number, cardIndex: number) => React.ReactNode
+) {
+  return Array.from({ length: setCount }, (_, setIndex) =>
+    items.map((item, cardIndex) => renderItem(item, setIndex, cardIndex))
+  ).flat();
+}
+
 export default function Home() {
   const [scrollProgress, setScrollProgress] = useState<number>(0);
+  const [showDesktopSticky, setShowDesktopSticky] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
   const completeCareRef = useRef<HTMLElement>(null);
   const sliderRef = useRef<HTMLDivElement>(null);
   const reviewsTrackRef = useRef<HTMLDivElement>(null);
   const isDoctorsPausedByClickRef = useRef(false);
   const doctorsPausedScrollRef = useRef(0);
   const doctorsPausedIdRef = useRef<string | null>(null);
+  const doctorTapLockRef = useRef(0);
   const [pausedDoctorId, setPausedDoctorId] = useState<string | null>(null);
 
   const isReviewsPausedByClickRef = useRef(false);
   const reviewsPausedScrollRef = useRef(0);
   const reviewsPausedIdRef = useRef<string | null>(null);
+  const reviewTapLockRef = useRef(0);
   const [pausedReviewId, setPausedReviewId] = useState<string | null>(null);
 
   const toggleCarouselPause = (
@@ -441,6 +572,7 @@ export default function Home() {
     isPausedRef.current = true;
     idRef.current = itemId;
     setPausedId(itemId);
+    track.scrollLeft = scrollRef.current;
   };
 
   const handleDoctorCardClick = (docId: string) => {
@@ -454,6 +586,25 @@ export default function Home() {
     );
   };
 
+  const handleDoctorCardTap = (docId: string, e: React.SyntheticEvent) => {
+    const target = e.target;
+    if (!(target instanceof HTMLElement) || target.closest(".doctor-btn")) return;
+    e.stopPropagation();
+
+    if (e.type === "touchend") {
+      e.preventDefault();
+      doctorTapLockRef.current = Date.now();
+      handleDoctorCardClick(docId);
+      return;
+    }
+
+    if (e.type === "click" && Date.now() - doctorTapLockRef.current < 400) {
+      return;
+    }
+
+    handleDoctorCardClick(docId);
+  };
+
   const handleReviewCardClick = (reviewId: string) => {
     toggleCarouselPause(
       reviewsTrackRef.current,
@@ -463,6 +614,23 @@ export default function Home() {
       reviewsPausedIdRef,
       setPausedReviewId
     );
+  };
+
+  const handleReviewCardTap = (reviewId: string, e: React.SyntheticEvent) => {
+    e.stopPropagation();
+
+    if (e.type === "touchend") {
+      e.preventDefault();
+      reviewTapLockRef.current = Date.now();
+      handleReviewCardClick(reviewId);
+      return;
+    }
+
+    if (e.type === "click" && Date.now() - reviewTapLockRef.current < 400) {
+      return;
+    }
+
+    handleReviewCardClick(reviewId);
   };
 
   const isCarouselCardTarget = (target: EventTarget | null) => {
@@ -530,6 +698,33 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   const [requestId, setRequestId] = useState<string>("");
+
+  /* Desktop: sticky Book Now after hero scrolls away. Mobile: always visible (CSS). */
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const desktopMq = window.matchMedia("(min-width: 901px)");
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!desktopMq.matches) return;
+        setShowDesktopSticky(!entry.isIntersecting);
+      },
+      { threshold: 0, rootMargin: "0px" }
+    );
+
+    const syncForViewport = () => {
+      if (!desktopMq.matches) setShowDesktopSticky(false);
+    };
+
+    observer.observe(hero);
+    desktopMq.addEventListener("change", syncForViewport);
+    return () => {
+      observer.disconnect();
+      desktopMq.removeEventListener("change", syncForViewport);
+    };
+  }, []);
 
   // Monitor Scroll Progress
   useEffect(() => {
@@ -616,16 +811,16 @@ export default function Home() {
           <img className="logo-img" src={assetUrl("/motherhood_logo.png")} alt="Motherhood Women & Children's Hospital" />
         </a>
         <div className="nav-right">
-          <a href="tel:08069549251" className="nav-phone">
-            <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.1 2.38a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.69-1.69a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="currentColor" /></svg>
-            080 695 49251
+          <a href="tel:08069549251" className="nav-phone" aria-label="Call 080 695 49251">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.1 2.38a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.69-1.69a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="currentColor" /></svg>
+            <span className="nav-phone-text">080 695 49251</span>
           </a>
           <button onClick={() => scrollToSection("booking")} className="nav-cta hidden sm:inline-block">Book Consultation</button>
         </div>
       </nav>
 
       {/* ─── HERO ─── */}
-      <div className="hero" id="home">
+      <div ref={heroRef} className="hero" id="home">
         {/* Cloud9-style decorative half-circles */}
         <div className="hero-decor" aria-hidden="true">
           <span className="d1"></span><span className="d2"></span><span className="d3"></span><span className="d4"></span>
@@ -692,7 +887,7 @@ export default function Home() {
                           onChange={handleInputChange}
                           className={formErrors.name ? "border-[#b8364d]" : ""}
                         />
-                        {formErrors.name && <span className="text-[9px] font-semibold text-[#b8364d] mt-0.5">{formErrors.name}</span>}
+                        {formErrors.name && <span className="text-[10px] font-semibold text-[#b8364d] mt-0.5">{formErrors.name}</span>}
                       </div>
                       <div className="form-field">
                         <input
@@ -704,7 +899,7 @@ export default function Home() {
                           onChange={handleInputChange}
                           className={formErrors.phone ? "border-[#b8364d]" : ""}
                         />
-                        {formErrors.phone && <span className="text-[9px] font-semibold text-[#b8364d] mt-0.5">{formErrors.phone}</span>}
+                        {formErrors.phone && <span className="text-[10px] font-semibold text-[#b8364d] mt-0.5">{formErrors.phone}</span>}
                       </div>
                       <div className="form-field">
                         <select
@@ -731,6 +926,16 @@ export default function Home() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* ─── STICKY FLOATS (after banner) ─── */}
+      <div className={`sticky-desktop${showDesktopSticky ? " is-visible" : ""}`} aria-hidden={!showDesktopSticky}>
+        <button type="button" onClick={() => scrollToSection("booking")} className="sticky-float">Book Now</button>
+      </div>
+
+      <div className="sticky-mobile is-visible" aria-hidden={false}>
+        <button type="button" onClick={() => scrollToSection("booking")} className="btn-primary">Book Now</button>
+        <a href="tel:08069549251" className="btn-secondary">Call Now</a>
       </div>
 
       {/* ─── STATS BAR ─── */}
@@ -809,108 +1014,16 @@ export default function Home() {
               ref={sliderRef}
             >
               <div className="doctors-slider">
-                {/* Set 1 */}
-                {CHENNAI_DOCTORS.map((doc) => (
-                  <div
-                    key={doc.id}
-                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDoctorCardClick(doc.id);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        handleDoctorCardClick(doc.id);
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={pausedDoctorId === doc.id}
-                  >
-                    <div className="doctor-photo">
-                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
-                        {doc.initials}
-                      </div>
-                    </div>
-                    <div className="doctor-name">{doc.name}</div>
-                    <div className="doctor-qual">{doc.qualifications}</div>
-                    <div className="doctor-type">{doc.specialty}</div>
-                    <div className="doctor-location">📍 {doc.location}</div>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
-                  </div>
-                ))}
-
-                {/* Set 2 */}
-                {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div
-                    key={`${doc.id}-dup-${idx}`}
-                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDoctorCardClick(doc.id);
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div className="doctor-photo">
-                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
-                        {doc.initials}
-                      </div>
-                    </div>
-                    <div className="doctor-name">{doc.name}</div>
-                    <div className="doctor-qual">{doc.qualifications}</div>
-                    <div className="doctor-type">{doc.specialty}</div>
-                    <div className="doctor-location">📍 {doc.location}</div>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
-                  </div>
-                ))}
-
-                {/* Set 3 */}
-                {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div
-                    key={`${doc.id}-dup3-${idx}`}
-                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDoctorCardClick(doc.id);
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div className="doctor-photo">
-                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
-                        {doc.initials}
-                      </div>
-                    </div>
-                    <div className="doctor-name">{doc.name}</div>
-                    <div className="doctor-qual">{doc.qualifications}</div>
-                    <div className="doctor-type">{doc.specialty}</div>
-                    <div className="doctor-location">📍 {doc.location}</div>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
-                  </div>
-                ))}
-
-                {/* Set 4 */}
-                {CHENNAI_DOCTORS.map((doc, idx) => (
-                  <div
-                    key={`${doc.id}-dup4-${idx}`}
-                    className={`doctor-card${pausedDoctorId === doc.id ? " doctor-card-paused" : ""}`}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDoctorCardClick(doc.id);
-                    }}
-                    aria-hidden="true"
-                  >
-                    <div className="doctor-photo">
-                      <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
-                        {doc.initials}
-                      </div>
-                    </div>
-                    <div className="doctor-name">{doc.name}</div>
-                    <div className="doctor-qual">{doc.qualifications}</div>
-                    <div className="doctor-type">{doc.specialty}</div>
-                    <div className="doctor-location">📍 {doc.location}</div>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); scrollToSection("booking"); }} className="doctor-btn">Book Appointment</button>
-                  </div>
+                {renderCarouselSets(CAROUSEL_SET_COUNT, CHENNAI_DOCTORS, (doc, setIndex, cardIndex) => (
+                  <DoctorCarouselCard
+                    key={setIndex === 0 ? doc.id : `${doc.id}-s${setIndex}-${cardIndex}`}
+                    doc={doc}
+                    setIndex={setIndex}
+                    isPaused={pausedDoctorId === doc.id}
+                    onTap={handleDoctorCardTap}
+                    onActivate={handleDoctorCardClick}
+                    onBook={() => scrollToSection("booking")}
+                  />
                 ))}
               </div>
             </div>
@@ -992,17 +1105,31 @@ export default function Home() {
             </div>
             <div className="review-badges-row">
               <div className="review-platform-badge">
-                <div className="rpb-logo google">
-                  G
+                <div className="rpb-logo">
+                  <img
+                    className="rpb-logo-img"
+                    src={assetUrl("/google-logo.svg")}
+                    alt=""
+                    width={24}
+                    height={24}
+                  />
                 </div>
-                <div>
+                <div className="rpb-copy">
                   <div className="rpb-score">⭐ 4.8</div>
                   <div className="rpb-label">Google &middot; 4,821 reviews</div>
                 </div>
               </div>
               <div className="review-platform-badge">
-                <div className="rpb-logo practo">Pr</div>
-                <div>
+                <div className="rpb-logo rpb-logo--practo">
+                  <img
+                    className="rpb-logo-img rpb-logo-img--practo"
+                    src={assetUrl("/practo-logo.svg")}
+                    alt="Practo"
+                    width={100}
+                    height={23}
+                  />
+                </div>
+                <div className="rpb-copy">
                   <div className="rpb-score">⭐ 4.9</div>
                   <div className="rpb-label">Practo &middot; 1,956 reviews</div>
                 </div>
@@ -1016,109 +1143,20 @@ export default function Home() {
           ref={reviewsTrackRef}
         >
             <div className="review-row">
-              {/* Set 1 */}
-              {PATIENT_REVIEWS.map((rev, idx) => {
+              {renderCarouselSets(CAROUSEL_SET_COUNT, PATIENT_REVIEWS, (rev, setIndex, cardIndex) => {
                 const reviewId = `review-${rev.name}`;
                 return (
-                <div
-                  key={`rev-${idx}`}
-                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReviewCardClick(reviewId);
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  aria-pressed={pausedReviewId === reviewId}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleReviewCardClick(reviewId);
-                    }
-                  }}
-                >
-                  <div className="review-top">
-                    <div>
-                      <div className="review-name">{rev.name}</div>
-                      <div className="review-meta">{rev.meta}</div>
-                    </div>
-                    <div className="review-stars">{rev.stars}</div>
-                  </div>
-                  <p>{rev.text}</p>
-                </div>
-              );})}
-
-              {/* Set 2 */}
-              {PATIENT_REVIEWS.map((rev, idx) => {
-                const reviewId = `review-${rev.name}`;
-                return (
-                <div
-                  key={`rev-dup-${idx}`}
-                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReviewCardClick(reviewId);
-                  }}
-                  aria-hidden="true"
-                >
-                  <div className="review-top">
-                    <div>
-                      <div className="review-name">{rev.name}</div>
-                      <div className="review-meta">{rev.meta}</div>
-                    </div>
-                    <div className="review-stars">{rev.stars}</div>
-                  </div>
-                  <p>{rev.text}</p>
-                </div>
-              );})}
-
-              {/* Set 3 */}
-              {PATIENT_REVIEWS.map((rev, idx) => {
-                const reviewId = `review-${rev.name}`;
-                return (
-                <div
-                  key={`rev-dup3-${idx}`}
-                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReviewCardClick(reviewId);
-                  }}
-                  aria-hidden="true"
-                >
-                  <div className="review-top">
-                    <div>
-                      <div className="review-name">{rev.name}</div>
-                      <div className="review-meta">{rev.meta}</div>
-                    </div>
-                    <div className="review-stars">{rev.stars}</div>
-                  </div>
-                  <p>{rev.text}</p>
-                </div>
-              );})}
-
-              {/* Set 4 */}
-              {PATIENT_REVIEWS.map((rev, idx) => {
-                const reviewId = `review-${rev.name}`;
-                return (
-                <div
-                  key={`rev-dup4-${idx}`}
-                  className={`review-card${pausedReviewId === reviewId ? " review-card-paused" : ""}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleReviewCardClick(reviewId);
-                  }}
-                  aria-hidden="true"
-                >
-                  <div className="review-top">
-                    <div>
-                      <div className="review-name">{rev.name}</div>
-                      <div className="review-meta">{rev.meta}</div>
-                    </div>
-                    <div className="review-stars">{rev.stars}</div>
-                  </div>
-                  <p>{rev.text}</p>
-                </div>
-              );})}
+                  <ReviewCarouselCard
+                    key={setIndex === 0 ? `rev-${cardIndex}` : `rev-s${setIndex}-${cardIndex}`}
+                    review={rev}
+                    reviewId={reviewId}
+                    setIndex={setIndex}
+                    isPaused={pausedReviewId === reviewId}
+                    onTap={handleReviewCardTap}
+                    onActivate={handleReviewCardClick}
+                  />
+                );
+              })}
             </div>
         </div>
       </section>
@@ -1158,33 +1196,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── FINAL CTA ─── */}
-      <section className="final-cta">
-        <div className="final-cta-inner">
-          <h2>Your motherhood journey deserves expert support from day one.</h2>
-          <p>Book a free consultation, explore the birthing package, and let our Chennai team guide every step from first visit to delivery.</p>
-          <div className="final-btns">
-            <button onClick={() => scrollToSection("booking")} className="final-btn-gold">Book Consultation</button>
-            <a href="tel:08069549251" className="final-btn-outline">Call Now</a>
-          </div>
-        </div>
-      </section>
-
       {/* ─── FOOTER ─── */}
       <footer>
-        <p>&copy; {new Date().getFullYear()} Motherhood Hospitals | Chennai | 080 695 49251</p>
-        <p><a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms and Conditions</a></p>
+        <div className="footer-inner">
+          <p className="footer-copy">&copy; {new Date().getFullYear()} Motherhood Hospitals &middot; Chennai &middot; 080 695 49251</p>
+          <p className="footer-legal">
+            <a href="#">Privacy Policy</a>
+            <span className="footer-sep" aria-hidden="true">|</span>
+            <a href="#">Terms &amp; Conditions</a>
+          </p>
+        </div>
       </footer>
-
-      {/* ─── STICKY FLOATS ─── */}
-      <div className="sticky-desktop">
-        <button onClick={() => scrollToSection("booking")} className="sticky-float">Book Now</button>
-      </div>
-
-      <div className="sticky-mobile">
-        <button type="button" onClick={() => scrollToSection("booking")} className="btn-primary">Book Now</button>
-        <a href="tel:08069549251" className="btn-secondary">Call Now</a>
-      </div>
     </div>
   );
 }
