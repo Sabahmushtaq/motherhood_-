@@ -267,100 +267,6 @@ const MATERNITY_STAGES: Stage[] = [
 ];
 
 const CAROUSEL_SET_COUNT = 4;
-const CAROUSEL_SCROLL_SPEED = 0.8;
-
-/** Keep duplicated carousel scroll looping — avoids stall when scrollLeft hits max */
-function normalizeCarouselScroll(track: HTMLElement, setCount = CAROUSEL_SET_COUNT) {
-  const setWidth = track.scrollWidth / setCount;
-  if (setWidth <= 0) return;
-
-  const maxScroll = Math.max(0, track.scrollWidth - track.clientWidth);
-  const left = track.scrollLeft;
-
-  if (left >= maxScroll - 1) {
-    track.scrollLeft = left - setWidth;
-    return;
-  }
-
-  if (left >= setWidth * 2) {
-    track.scrollLeft = left - setWidth;
-  } else if (left < setWidth * 0.5) {
-    track.scrollLeft = left + setWidth;
-  }
-}
-
-function setupInfiniteCarouselScroll(
-  track: HTMLDivElement,
-  isPausedRef: React.MutableRefObject<boolean>,
-  isCardTarget: (target: EventTarget | null) => boolean
-) {
-  let animationFrameId = 0;
-  let isHovered = false;
-  let isTouched = false;
-
-  const initScroll = () => {
-    const setWidth = track.scrollWidth / CAROUSEL_SET_COUNT;
-    if (setWidth > 0) track.scrollLeft = setWidth;
-  };
-
-  const timer = window.setTimeout(initScroll, 100);
-  const resizeObserver = new ResizeObserver(() => {
-    normalizeCarouselScroll(track);
-  });
-  resizeObserver.observe(track);
-
-  const onScroll = () => {
-    if (isPausedRef.current) return;
-    normalizeCarouselScroll(track);
-  };
-
-  const step = () => {
-    if (!isHovered && !isTouched && !isPausedRef.current) {
-      track.scrollLeft += CAROUSEL_SCROLL_SPEED;
-      normalizeCarouselScroll(track);
-    }
-    animationFrameId = requestAnimationFrame(step);
-  };
-
-  const onMouseEnter = () => {
-    isHovered = true;
-  };
-  const onMouseLeave = () => {
-    isHovered = false;
-  };
-  const onTouchStart = (e: TouchEvent) => {
-    if (isCardTarget(e.target)) return;
-    isTouched = true;
-  };
-  const onTouchEnd = (e: TouchEvent) => {
-    if (isCardTarget(e.target)) return;
-    isTouched = false;
-  };
-  const onTouchCancel = () => {
-    isTouched = false;
-  };
-
-  track.addEventListener("scroll", onScroll, { passive: true });
-  track.addEventListener("mouseenter", onMouseEnter);
-  track.addEventListener("mouseleave", onMouseLeave);
-  track.addEventListener("touchstart", onTouchStart, { passive: true });
-  track.addEventListener("touchend", onTouchEnd);
-  track.addEventListener("touchcancel", onTouchCancel);
-
-  animationFrameId = requestAnimationFrame(step);
-
-  return () => {
-    window.clearTimeout(timer);
-    resizeObserver.disconnect();
-    cancelAnimationFrame(animationFrameId);
-    track.removeEventListener("scroll", onScroll);
-    track.removeEventListener("mouseenter", onMouseEnter);
-    track.removeEventListener("mouseleave", onMouseLeave);
-    track.removeEventListener("touchstart", onTouchStart);
-    track.removeEventListener("touchend", onTouchEnd);
-    track.removeEventListener("touchcancel", onTouchCancel);
-  };
-}
 
 function AnimatedStatNumber({
   value,
@@ -412,19 +318,81 @@ function AnimatedStatNumber({
   );
 }
 
+function AnimatedCountUp({
+  value,
+  decimals = 0,
+  prefix = "",
+  suffix = "",
+  className = "",
+  duration = 2000,
+}: {
+  value: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  className?: string;
+  duration?: number;
+}) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState(
+    decimals > 0 ? (0).toFixed(decimals) : "0"
+  );
+  const hasAnimated = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || hasAnimated.current) return;
+        hasAnimated.current = true;
+
+        const start = performance.now();
+        const tick = (now: number) => {
+          const progress = Math.min((now - start) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          const current = eased * value;
+
+          if (decimals > 0) {
+            setDisplay(current.toFixed(decimals));
+          } else {
+            setDisplay(Math.round(current).toLocaleString("en-IN"));
+          }
+
+          if (progress < 1) requestAnimationFrame(tick);
+          else if (decimals > 0) setDisplay(value.toFixed(decimals));
+          else setDisplay(Math.round(value).toLocaleString("en-IN"));
+        };
+        requestAnimationFrame(tick);
+      },
+      { threshold: 0.2, rootMargin: "0px 0px -5% 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [value, decimals, duration]);
+
+  return (
+    <span ref={ref} className={className}>
+      {prefix}
+      {display}
+      {suffix}
+    </span>
+  );
+}
+
 function DoctorCarouselCard({
   doc,
   setIndex,
   isPaused,
   onTap,
-  onActivate,
   onBook,
 }: {
   doc: Doctor;
   setIndex: number;
   isPaused: boolean;
   onTap: (id: string, e: React.SyntheticEvent) => void;
-  onActivate: (id: string) => void;
   onBook: () => void;
 }) {
   const isPrimary = setIndex === 0;
@@ -432,21 +400,11 @@ function DoctorCarouselCard({
   return (
     <div
       className={`doctor-card${isPaused ? " doctor-card-paused" : ""}`}
+      onMouseDown={(e) => {
+        if (e.button === 0) e.preventDefault();
+      }}
       onClick={(e) => onTap(doc.id, e)}
       onTouchEnd={(e) => onTap(doc.id, e)}
-      onKeyDown={
-        isPrimary
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onActivate(doc.id);
-              }
-            }
-          : undefined
-      }
-      role={isPrimary ? "button" : undefined}
-      tabIndex={isPrimary ? 0 : undefined}
-      aria-pressed={isPrimary ? isPaused : undefined}
       aria-hidden={isPrimary ? undefined : true}
     >
       <div className="doctor-photo">
@@ -478,35 +436,23 @@ function ReviewCarouselCard({
   setIndex,
   isPaused,
   onTap,
-  onActivate,
 }: {
   review: Review;
   reviewId: string;
   setIndex: number;
   isPaused: boolean;
   onTap: (id: string, e: React.SyntheticEvent) => void;
-  onActivate: (id: string) => void;
 }) {
   const isPrimary = setIndex === 0;
 
   return (
     <div
       className={`review-card${isPaused ? " review-card-paused" : ""}`}
+      onMouseDown={(e) => {
+        if (e.button === 0) e.preventDefault();
+      }}
       onClick={(e) => onTap(reviewId, e)}
       onTouchEnd={(e) => onTap(reviewId, e)}
-      onKeyDown={
-        isPrimary
-          ? (e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                onActivate(reviewId);
-              }
-            }
-          : undefined
-      }
-      role={isPrimary ? "button" : undefined}
-      tabIndex={isPrimary ? 0 : undefined}
-      aria-pressed={isPrimary ? isPaused : undefined}
       aria-hidden={isPrimary ? undefined : true}
     >
       <div className="review-top">
@@ -536,54 +482,14 @@ export default function Home() {
   const [showDesktopSticky, setShowDesktopSticky] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const completeCareRef = useRef<HTMLElement>(null);
-  const sliderRef = useRef<HTMLDivElement>(null);
-  const reviewsTrackRef = useRef<HTMLDivElement>(null);
-  const isDoctorsPausedByClickRef = useRef(false);
-  const doctorsPausedScrollRef = useRef(0);
-  const doctorsPausedIdRef = useRef<string | null>(null);
   const doctorTapLockRef = useRef(0);
   const [pausedDoctorId, setPausedDoctorId] = useState<string | null>(null);
 
-  const isReviewsPausedByClickRef = useRef(false);
-  const reviewsPausedScrollRef = useRef(0);
-  const reviewsPausedIdRef = useRef<string | null>(null);
   const reviewTapLockRef = useRef(0);
   const [pausedReviewId, setPausedReviewId] = useState<string | null>(null);
 
-  const toggleCarouselPause = (
-    track: HTMLDivElement | null,
-    itemId: string,
-    isPausedRef: React.MutableRefObject<boolean>,
-    scrollRef: React.MutableRefObject<number>,
-    idRef: React.MutableRefObject<string | null>,
-    setPausedId: React.Dispatch<React.SetStateAction<string | null>>
-  ) => {
-    if (!track) return;
-
-    if (isPausedRef.current && idRef.current === itemId) {
-      track.scrollLeft = scrollRef.current;
-      isPausedRef.current = false;
-      idRef.current = null;
-      setPausedId(null);
-      return;
-    }
-
-    scrollRef.current = track.scrollLeft;
-    isPausedRef.current = true;
-    idRef.current = itemId;
-    setPausedId(itemId);
-    track.scrollLeft = scrollRef.current;
-  };
-
   const handleDoctorCardClick = (docId: string) => {
-    toggleCarouselPause(
-      sliderRef.current,
-      docId,
-      isDoctorsPausedByClickRef,
-      doctorsPausedScrollRef,
-      doctorsPausedIdRef,
-      setPausedDoctorId
-    );
+    setPausedDoctorId((current) => (current === docId ? null : docId));
   };
 
   const handleDoctorCardTap = (docId: string, e: React.SyntheticEvent) => {
@@ -592,7 +498,6 @@ export default function Home() {
     e.stopPropagation();
 
     if (e.type === "touchend") {
-      e.preventDefault();
       doctorTapLockRef.current = Date.now();
       handleDoctorCardClick(docId);
       return;
@@ -606,21 +511,13 @@ export default function Home() {
   };
 
   const handleReviewCardClick = (reviewId: string) => {
-    toggleCarouselPause(
-      reviewsTrackRef.current,
-      reviewId,
-      isReviewsPausedByClickRef,
-      reviewsPausedScrollRef,
-      reviewsPausedIdRef,
-      setPausedReviewId
-    );
+    setPausedReviewId((current) => (current === reviewId ? null : reviewId));
   };
 
   const handleReviewCardTap = (reviewId: string, e: React.SyntheticEvent) => {
     e.stopPropagation();
 
     if (e.type === "touchend") {
-      e.preventDefault();
       reviewTapLockRef.current = Date.now();
       handleReviewCardClick(reviewId);
       return;
@@ -631,11 +528,6 @@ export default function Home() {
     }
 
     handleReviewCardClick(reviewId);
-  };
-
-  const isCarouselCardTarget = (target: EventTarget | null) => {
-    if (!(target instanceof HTMLElement)) return false;
-    return !!target.closest(".doctor-card, .review-card");
   };
 
   /* Mobile Complete Care wheel — one-shot reveal when scrolled into view */
@@ -661,26 +553,6 @@ export default function Home() {
       observer.disconnect();
       window.clearTimeout(fallbackTimer);
     };
-  }, []);
-
-  useEffect(() => {
-    const track = sliderRef.current;
-    if (!track) return;
-    return setupInfiniteCarouselScroll(
-      track,
-      isDoctorsPausedByClickRef,
-      isCarouselCardTarget
-    );
-  }, []);
-
-  useEffect(() => {
-    const track = reviewsTrackRef.current;
-    if (!track) return;
-    return setupInfiniteCarouselScroll(
-      track,
-      isReviewsPausedByClickRef,
-      isCarouselCardTarget
-    );
   }, []);
 
   // Inquiry Form State
@@ -1010,8 +882,7 @@ export default function Home() {
 
         <div className="doctors-slider-wrap">
             <div
-              className="doctors-track-outer"
-              ref={sliderRef}
+              className={`doctors-track-outer${pausedDoctorId ? " carousel-paused" : ""}`}
             >
               <div className="doctors-slider">
                 {renderCarouselSets(CAROUSEL_SET_COUNT, CHENNAI_DOCTORS, (doc, setIndex, cardIndex) => (
@@ -1021,7 +892,6 @@ export default function Home() {
                     setIndex={setIndex}
                     isPaused={pausedDoctorId === doc.id}
                     onTap={handleDoctorCardTap}
-                    onActivate={handleDoctorCardClick}
                     onBook={() => scrollToSection("booking")}
                   />
                 ))}
@@ -1115,8 +985,23 @@ export default function Home() {
                   />
                 </div>
                 <div className="rpb-copy">
-                  <div className="rpb-score">⭐ 4.8</div>
-                  <div className="rpb-label">Google &middot; 4,821 reviews</div>
+                  <div className="rpb-score">
+                    <AnimatedCountUp
+                      value={4.8}
+                      decimals={1}
+                      prefix="⭐ "
+                      duration={1600}
+                    />
+                  </div>
+                  <div className="rpb-label">
+                    Google &middot;{" "}
+                    <AnimatedCountUp
+                      value={4821}
+                      duration={2200}
+                      className="rpb-count-up"
+                    />
+                    {" reviews"}
+                  </div>
                 </div>
               </div>
               <div className="review-platform-badge">
@@ -1130,8 +1015,23 @@ export default function Home() {
                   />
                 </div>
                 <div className="rpb-copy">
-                  <div className="rpb-score">⭐ 4.9</div>
-                  <div className="rpb-label">Practo &middot; 1,956 reviews</div>
+                  <div className="rpb-score">
+                    <AnimatedCountUp
+                      value={4.9}
+                      decimals={1}
+                      prefix="⭐ "
+                      duration={1600}
+                    />
+                  </div>
+                  <div className="rpb-label">
+                    Practo &middot;{" "}
+                    <AnimatedCountUp
+                      value={1956}
+                      duration={2200}
+                      className="rpb-count-up"
+                    />
+                    {" reviews"}
+                  </div>
                 </div>
               </div>
             </div>
@@ -1139,8 +1039,7 @@ export default function Home() {
         </div>
 
         <div
-          className="review-marquee"
-          ref={reviewsTrackRef}
+          className={`review-marquee${pausedReviewId ? " carousel-paused" : ""}`}
         >
             <div className="review-row">
               {renderCarouselSets(CAROUSEL_SET_COUNT, PATIENT_REVIEWS, (rev, setIndex, cardIndex) => {
@@ -1153,7 +1052,6 @@ export default function Home() {
                     setIndex={setIndex}
                     isPaused={pausedReviewId === reviewId}
                     onTap={handleReviewCardTap}
-                    onActivate={handleReviewCardClick}
                   />
                 );
               })}
