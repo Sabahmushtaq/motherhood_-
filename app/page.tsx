@@ -267,6 +267,195 @@ const MATERNITY_STAGES: Stage[] = [
 ];
 
 const CAROUSEL_SET_COUNT = 4;
+// How many px of horizontal movement before we treat a touch as a swipe (not a tap)
+const CAROUSEL_SWIPE_THRESHOLD_PX = 10;
+
+// Records the touch-start X on the card element so tap-vs-swipe can be detected in onTouchEnd.
+function recordTouchStartX(e: React.TouchEvent) {
+  const t = e.touches[0];
+  if (t) e.currentTarget.setAttribute("data-touch-x", String(t.clientX));
+}
+
+// Returns how many px the finger moved horizontally over a given card element.
+function getCarouselSwipeDeltaPx(e: React.SyntheticEvent, cardSelector: string): number {
+  if (!(e.target instanceof HTMLElement)) return 0;
+  const card = e.target.closest(cardSelector);
+  if (!card) return 0;
+  const startX = parseFloat(card.getAttribute("data-touch-x") ?? "");
+  if (Number.isNaN(startX)) return 0;
+  if (!(e.nativeEvent instanceof TouchEvent)) return 0;
+  const touch = e.nativeEvent.changedTouches[0];
+  if (!touch) return 0;
+  return Math.abs(touch.clientX - startX);
+}
+
+/**
+ * Drives infinite-loop auto-scroll + native-feeling touch swipe on a carousel.
+ *
+ * Strategy: move the inner strip (firstElementChild) via CSS transform: translate3d()
+ * instead of scrollLeft. Transforms run on the GPU compositor thread in both Chrome
+ * and Safari — zero layout reflow, always smooth.
+ *
+ * Container must be overflow:hidden; strip must have will-change:transform.
+ */
+function setupInfiniteCarouselScroll(
+  container: HTMLDivElement,
+  isPausedRef: React.MutableRefObject<boolean>
+) {
+  const strip = container.firstElementChild as HTMLElement | null;
+  if (!strip) return () => {};
+
+  const AUTO_SPEED = 50;   // px per second auto-scroll
+  const FRICTION   = 0.88; // momentum decay multiplier per ~16ms frame
+
+  let pos      = 0;   // current translateX in px (≤ 0, gets more negative as we scroll right)
+  let velocity = 0;   // px per frame (for post-swipe momentum)
+  let rafId    = 0;
+  let lastTime = 0;
+  let isInView = true;
+  let isHovered = false;
+
+  // Touch tracking
+  let isTouching   = false;
+  let touchStartX  = 0;
+  let touchStartPos = 0;
+  let prevX        = 0;
+  let prevTime     = 0;
+
+  const isDesktop = () =>
+    window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  const setWidth = () => strip.scrollWidth / CAROUSEL_SET_COUNT;
+
+  // Keep pos in (-setWidth, 0] so the loop is seamless (all 4 sets are identical)
+  const loopPos = () => {
+    const sw = setWidth();
+    if (sw <= 0) return;
+    while (pos < -sw) pos += sw;
+    while (pos > 0)   pos -= sw;
+  };
+
+  const applyPos = () => {
+    strip.style.transform = `translate3d(${pos}px,0,0)`;
+  };
+
+  let initialized = false;
+  const init = () => {
+    if (initialized) return;
+    const sw = setWidth();
+    if (sw <= 0) return;
+    pos = 0;
+    applyPos();
+    initialized = true;
+  };
+
+  // Touch handlers — direct manipulation, no scrollLeft involved
+  const onTouchStart = (e: TouchEvent) => {
+    isTouching    = true;
+    velocity      = 0;
+    touchStartX   = e.touches[0].clientX;
+    touchStartPos = pos;
+    prevX         = touchStartX;
+    prevTime      = performance.now();
+  };
+
+  const onTouchMove = (e: TouchEvent) => {
+    if (!isTouching) return;
+    const dx = e.touches[0].clientX - touchStartX;
+    pos = touchStartPos + dx;
+    loopPos();
+    applyPos();
+
+    const now = performance.now();
+    const dt  = now - prevTime;
+    if (dt > 0) {
+      // Convert to px-per-frame at 60 fps for momentum
+      velocity = ((e.touches[0].clientX - prevX) / dt) * 16.67;
+    }
+    prevX    = e.touches[0].clientX;
+    prevTime = now;
+  };
+
+  const onTouchEnd = () => { isTouching = false; };
+
+  const step = (ts: number) => {
+    if (!lastTime) lastTime = ts;
+    const dt = Math.min(ts - lastTime, 50); // cap to avoid jump after tab-switch
+    lastTime = ts;
+
+    if (!isTouching) {
+      if (Math.abs(velocity) > 0.3) {
+        // Coast to a stop after a swipe
+        pos += velocity;
+        velocity *= FRICTION;
+        loopPos();
+        applyPos();
+      } else if (isInView && !isHovered && !isPausedRef.current) {
+        // Smooth auto-scroll
+        velocity = 0;
+        pos -= (AUTO_SPEED * dt) / 1000;
+        loopPos();
+        applyPos();
+      } else {
+        velocity = 0;
+      }
+    }
+
+    rafId = requestAnimationFrame(step);
+  };
+
+  // Desktop hover pauses auto-scroll
+  const onMouseEnter = () => { if (isDesktop()) isHovered = true; };
+  const onMouseLeave = () => { isHovered = false; };
+
+  // Horizontal trackpad / mouse wheel scrolling on desktop
+  const onWheel = (e: WheelEvent) => {
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
+      pos -= e.deltaX * 0.8;
+      velocity = 0;
+      loopPos();
+      applyPos();
+    }
+  };
+
+  const io = new IntersectionObserver(
+    ([entry]) => { isInView = entry.isIntersecting; },
+    { threshold: 0.05, rootMargin: "40px 0px" }
+  );
+  io.observe(container);
+
+  const ro = new ResizeObserver(() => { initialized = false; init(); });
+  ro.observe(container);
+
+  const t1 = window.setTimeout(init, 50);
+  const t2 = window.setTimeout(init, 400);
+
+  container.addEventListener("touchstart",  onTouchStart, { passive: true });
+  container.addEventListener("touchmove",   onTouchMove,  { passive: true });
+  container.addEventListener("touchend",    onTouchEnd,   { passive: true });
+  container.addEventListener("touchcancel", onTouchEnd,   { passive: true });
+  container.addEventListener("mouseenter",  onMouseEnter);
+  container.addEventListener("mouseleave",  onMouseLeave);
+  container.addEventListener("wheel",       onWheel,      { passive: true });
+
+  requestAnimationFrame(init);
+  rafId = requestAnimationFrame(step);
+
+  return () => {
+    window.clearTimeout(t1);
+    window.clearTimeout(t2);
+    io.disconnect();
+    ro.disconnect();
+    cancelAnimationFrame(rafId);
+    container.removeEventListener("touchstart",  onTouchStart);
+    container.removeEventListener("touchmove",   onTouchMove);
+    container.removeEventListener("touchend",    onTouchEnd);
+    container.removeEventListener("touchcancel", onTouchEnd);
+    container.removeEventListener("mouseenter",  onMouseEnter);
+    container.removeEventListener("mouseleave",  onMouseLeave);
+    container.removeEventListener("wheel",       onWheel);
+  };
+}
 
 function AnimatedStatNumber({
   value,
@@ -400,9 +589,7 @@ function DoctorCarouselCard({
   return (
     <div
       className={`doctor-card${isPaused ? " doctor-card-paused" : ""}`}
-      onMouseDown={(e) => {
-        if (e.button === 0) e.preventDefault();
-      }}
+      onTouchStart={recordTouchStartX}
       onClick={(e) => onTap(doc.id, e)}
       onTouchEnd={(e) => onTap(doc.id, e)}
       aria-hidden={isPrimary ? undefined : true}
@@ -448,9 +635,7 @@ function ReviewCarouselCard({
   return (
     <div
       className={`review-card${isPaused ? " review-card-paused" : ""}`}
-      onMouseDown={(e) => {
-        if (e.button === 0) e.preventDefault();
-      }}
+      onTouchStart={recordTouchStartX}
       onClick={(e) => onTap(reviewId, e)}
       onTouchEnd={(e) => onTap(reviewId, e)}
       aria-hidden={isPrimary ? undefined : true}
@@ -482,6 +667,10 @@ export default function Home() {
   const [showDesktopSticky, setShowDesktopSticky] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const completeCareRef = useRef<HTMLElement>(null);
+  const doctorsCarouselRef = useRef<HTMLDivElement>(null);
+  const reviewsCarouselRef = useRef<HTMLDivElement>(null);
+  const isDoctorsPausedByClickRef = useRef(false);
+  const isReviewsPausedByClickRef = useRef(false);
   const doctorTapLockRef = useRef(0);
   const [pausedDoctorId, setPausedDoctorId] = useState<string | null>(null);
 
@@ -489,12 +678,22 @@ export default function Home() {
   const [pausedReviewId, setPausedReviewId] = useState<string | null>(null);
 
   const handleDoctorCardClick = (docId: string) => {
-    setPausedDoctorId((current) => (current === docId ? null : docId));
+    setPausedDoctorId((current) => {
+      const next = current === docId ? null : docId;
+      isDoctorsPausedByClickRef.current = next !== null;
+      return next;
+    });
   };
 
   const handleDoctorCardTap = (docId: string, e: React.SyntheticEvent) => {
     const target = e.target;
     if (!(target instanceof HTMLElement) || target.closest(".doctor-btn")) return;
+    if (
+      (e.type === "touchend" || e.type === "click") &&
+      getCarouselSwipeDeltaPx(e, ".doctor-card") > CAROUSEL_SWIPE_THRESHOLD_PX
+    ) {
+      return;
+    }
     e.stopPropagation();
 
     if (e.type === "touchend") {
@@ -511,10 +710,32 @@ export default function Home() {
   };
 
   const handleReviewCardClick = (reviewId: string) => {
-    setPausedReviewId((current) => (current === reviewId ? null : reviewId));
+    setPausedReviewId((current) => {
+      const next = current === reviewId ? null : reviewId;
+      isReviewsPausedByClickRef.current = next !== null;
+      return next;
+    });
   };
 
+  useEffect(() => {
+    const track = doctorsCarouselRef.current;
+    if (!track) return;
+    return setupInfiniteCarouselScroll(track, isDoctorsPausedByClickRef);
+  }, []);
+
+  useEffect(() => {
+    const track = reviewsCarouselRef.current;
+    if (!track) return;
+    return setupInfiniteCarouselScroll(track, isReviewsPausedByClickRef);
+  }, []);
+
   const handleReviewCardTap = (reviewId: string, e: React.SyntheticEvent) => {
+    if (
+      (e.type === "touchend" || e.type === "click") &&
+      getCarouselSwipeDeltaPx(e, ".review-card") > CAROUSEL_SWIPE_THRESHOLD_PX
+    ) {
+      return;
+    }
     e.stopPropagation();
 
     if (e.type === "touchend") {
@@ -883,6 +1104,7 @@ export default function Home() {
         <div className="doctors-slider-wrap">
             <div
               className={`doctors-track-outer${pausedDoctorId ? " carousel-paused" : ""}`}
+              ref={doctorsCarouselRef}
             >
               <div className="doctors-slider">
                 {renderCarouselSets(CAROUSEL_SET_COUNT, CHENNAI_DOCTORS, (doc, setIndex, cardIndex) => (
@@ -1005,13 +1227,13 @@ export default function Home() {
                 </div>
               </div>
               <div className="review-platform-badge">
-                <div className="rpb-logo rpb-logo--practo">
+                <div className="rpb-logo">
                   <img
-                    className="rpb-logo-img rpb-logo-img--practo"
-                    src={assetUrl("/practo-logo.svg")}
-                    alt="Practo"
-                    width={100}
-                    height={23}
+                    className="rpb-logo-img"
+                    src={assetUrl("/practo-p-logo.svg")}
+                    alt=""
+                    width={24}
+                    height={24}
                   />
                 </div>
                 <div className="rpb-copy">
@@ -1040,6 +1262,7 @@ export default function Home() {
 
         <div
           className={`review-marquee${pausedReviewId ? " carousel-paused" : ""}`}
+          ref={reviewsCarouselRef}
         >
             <div className="review-row">
               {renderCarouselSets(CAROUSEL_SET_COUNT, PATIENT_REVIEWS, (rev, setIndex, cardIndex) => {
