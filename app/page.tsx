@@ -270,23 +270,83 @@ const CAROUSEL_SET_COUNT = 4;
 // How many px of horizontal movement before we treat a touch as a swipe (not a tap)
 const CAROUSEL_SWIPE_THRESHOLD_PX = 10;
 
-// Records the touch-start X on the card element so tap-vs-swipe can be detected in onTouchEnd.
-function recordTouchStartX(e: React.TouchEvent) {
+// Records touch start on a card so tap-vs-swipe can be detected in onTouchEnd.
+function recordTouchStart(e: React.TouchEvent) {
   const t = e.touches[0];
-  if (t) e.currentTarget.setAttribute("data-touch-x", String(t.clientX));
+  if (!t) return;
+  const el = e.currentTarget;
+  el.setAttribute("data-touch-x", String(t.clientX));
+  el.setAttribute("data-touch-y", String(t.clientY));
+  el.setAttribute("data-touch-t", String(Date.now()));
 }
 
-// Returns how many px the finger moved horizontally over a given card element.
-function getCarouselSwipeDeltaPx(e: React.SyntheticEvent, cardSelector: string): number {
-  if (!(e.target instanceof HTMLElement)) return 0;
-  const card = e.target.closest(cardSelector);
-  if (!card) return 0;
+// Clears iOS/Android sticky :hover after a tap so unselected cards drop back down.
+function clearStickyHover(el: EventTarget | null) {
+  if (!(el instanceof HTMLElement)) return;
+  el.blur();
+  const parent = el.parentElement;
+  if (!parent) return;
+  const prev = parent.style.pointerEvents;
+  parent.style.pointerEvents = "none";
+  requestAnimationFrame(() => {
+    parent.style.pointerEvents = prev;
+  });
+}
+
+function handleSelectableCardTap(
+  id: string,
+  e: React.SyntheticEvent,
+  cardSelector: string,
+  tapLockRef: React.MutableRefObject<number>,
+  onSelect: (id: string) => void,
+  options?: { ignoreSelector?: string }
+) {
+  if (
+    options?.ignoreSelector &&
+    e.target instanceof HTMLElement &&
+    e.target.closest(options.ignoreSelector)
+  ) {
+    return;
+  }
+  if (!isCarouselCardTap(e, cardSelector)) return;
+  e.stopPropagation();
+
+  if (e.type === "touchend") {
+    e.preventDefault();
+    tapLockRef.current = Date.now();
+    onSelect(id);
+    clearStickyHover(e.currentTarget);
+    return;
+  }
+
+  if (e.type === "click" && Date.now() - tapLockRef.current < 400) return;
+
+  onSelect(id);
+  clearStickyHover(e.currentTarget);
+}
+
+// True when a touch end is a deliberate tap (not a carousel swipe).
+function isCarouselCardTap(e: React.SyntheticEvent, cardSelector: string): boolean {
+  if (e.type === "click") return true;
+  if (e.type !== "touchend") return false;
+  const card =
+    e.currentTarget instanceof HTMLElement && e.currentTarget.matches(cardSelector)
+      ? e.currentTarget
+      : e.target instanceof HTMLElement
+        ? e.target.closest(cardSelector)
+        : null;
+  if (!(card instanceof HTMLElement)) return false;
   const startX = parseFloat(card.getAttribute("data-touch-x") ?? "");
-  if (Number.isNaN(startX)) return 0;
-  if (!(e.nativeEvent instanceof TouchEvent)) return 0;
+  const startY = parseFloat(card.getAttribute("data-touch-y") ?? "");
+  const startT = parseFloat(card.getAttribute("data-touch-t") ?? "");
+  if (Number.isNaN(startX) || Number.isNaN(startY) || Number.isNaN(startT)) return false;
+  if (!(e.nativeEvent instanceof TouchEvent)) return false;
   const touch = e.nativeEvent.changedTouches[0];
-  if (!touch) return 0;
-  return Math.abs(touch.clientX - startX);
+  if (!touch) return false;
+  if (Date.now() - startT > 450) return false;
+  if (Math.abs(touch.clientX - startX) > CAROUSEL_SWIPE_THRESHOLD_PX) return false;
+  if (Math.abs(touch.clientY - startY) > CAROUSEL_SWIPE_THRESHOLD_PX) return false;
+  return true;
 }
 
 /**
@@ -298,12 +358,19 @@ function getCarouselSwipeDeltaPx(e: React.SyntheticEvent, cardSelector: string):
  *
  * Container must be overflow:hidden; strip must have will-change:transform.
  */
+type CarouselController = {
+  cleanup: () => void;
+  stopMomentum: () => void;
+};
+
 function setupInfiniteCarouselScroll(
   container: HTMLDivElement,
   isPausedRef: React.MutableRefObject<boolean>
-) {
+): CarouselController {
   const strip = container.firstElementChild as HTMLElement | null;
-  if (!strip) return () => {};
+  if (!strip) {
+    return { cleanup: () => {}, stopMomentum: () => {} };
+  }
 
   const AUTO_SPEED = 50;   // px per second auto-scroll
   const FRICTION   = 0.88; // momentum decay multiplier per ~16ms frame
@@ -376,7 +443,10 @@ function setupInfiniteCarouselScroll(
     prevTime = now;
   };
 
-  const onTouchEnd = () => { isTouching = false; };
+  const onTouchEnd = () => {
+    isTouching = false;
+    velocity = 0;
+  };
 
   const step = (ts: number) => {
     if (!lastTime) lastTime = ts;
@@ -441,7 +511,7 @@ function setupInfiniteCarouselScroll(
   requestAnimationFrame(init);
   rafId = requestAnimationFrame(step);
 
-  return () => {
+  const cleanup = () => {
     window.clearTimeout(t1);
     window.clearTimeout(t2);
     io.disconnect();
@@ -454,6 +524,13 @@ function setupInfiniteCarouselScroll(
     container.removeEventListener("mouseenter",  onMouseEnter);
     container.removeEventListener("mouseleave",  onMouseLeave);
     container.removeEventListener("wheel",       onWheel);
+  };
+
+  return {
+    cleanup,
+    stopMomentum: () => {
+      velocity = 0;
+    },
   };
 }
 
@@ -589,7 +666,7 @@ function DoctorCarouselCard({
   return (
     <div
       className={`doctor-card${isPaused ? " doctor-card-paused" : ""}`}
-      onTouchStart={recordTouchStartX}
+      onTouchStart={recordTouchStart}
       onClick={(e) => onTap(doc.id, e)}
       onTouchEnd={(e) => onTap(doc.id, e)}
       aria-hidden={isPrimary ? undefined : true}
@@ -635,7 +712,7 @@ function ReviewCarouselCard({
   return (
     <div
       className={`review-card${isPaused ? " review-card-paused" : ""}`}
-      onTouchStart={recordTouchStartX}
+      onTouchStart={recordTouchStart}
       onClick={(e) => onTap(reviewId, e)}
       onTouchEnd={(e) => onTap(reviewId, e)}
       aria-hidden={isPrimary ? undefined : true}
@@ -669,6 +746,8 @@ export default function Home() {
   const completeCareRef = useRef<HTMLElement>(null);
   const doctorsCarouselRef = useRef<HTMLDivElement>(null);
   const reviewsCarouselRef = useRef<HTMLDivElement>(null);
+  const doctorsCarouselCtrlRef = useRef<CarouselController | null>(null);
+  const reviewsCarouselCtrlRef = useRef<CarouselController | null>(null);
   const isDoctorsPausedByClickRef = useRef(false);
   const isReviewsPausedByClickRef = useRef(false);
   const doctorTapLockRef = useRef(0);
@@ -677,78 +756,65 @@ export default function Home() {
   const reviewTapLockRef = useRef(0);
   const [pausedReviewId, setPausedReviewId] = useState<string | null>(null);
 
+  const offerTapLockRef = useRef(0);
+  const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+
+  useEffect(() => {
+    isDoctorsPausedByClickRef.current = pausedDoctorId !== null;
+  }, [pausedDoctorId]);
+
+  useEffect(() => {
+    isReviewsPausedByClickRef.current = pausedReviewId !== null;
+  }, [pausedReviewId]);
+
   const handleDoctorCardClick = (docId: string) => {
-    setPausedDoctorId((current) => {
-      const next = current === docId ? null : docId;
-      isDoctorsPausedByClickRef.current = next !== null;
-      return next;
-    });
+    doctorsCarouselCtrlRef.current?.stopMomentum();
+    setPausedDoctorId((current) => (current === docId ? null : docId));
   };
 
   const handleDoctorCardTap = (docId: string, e: React.SyntheticEvent) => {
-    const target = e.target;
-    if (!(target instanceof HTMLElement) || target.closest(".doctor-btn")) return;
-    if (
-      (e.type === "touchend" || e.type === "click") &&
-      getCarouselSwipeDeltaPx(e, ".doctor-card") > CAROUSEL_SWIPE_THRESHOLD_PX
-    ) {
-      return;
-    }
-    e.stopPropagation();
-
-    if (e.type === "touchend") {
-      doctorTapLockRef.current = Date.now();
-      handleDoctorCardClick(docId);
-      return;
-    }
-
-    if (e.type === "click" && Date.now() - doctorTapLockRef.current < 400) {
-      return;
-    }
-
-    handleDoctorCardClick(docId);
+    handleSelectableCardTap(docId, e, ".doctor-card", doctorTapLockRef, handleDoctorCardClick, {
+      ignoreSelector: ".doctor-btn",
+    });
   };
 
   const handleReviewCardClick = (reviewId: string) => {
-    setPausedReviewId((current) => {
-      const next = current === reviewId ? null : reviewId;
-      isReviewsPausedByClickRef.current = next !== null;
-      return next;
-    });
+    reviewsCarouselCtrlRef.current?.stopMomentum();
+    setPausedReviewId((current) => (current === reviewId ? null : reviewId));
   };
 
   useEffect(() => {
     const track = doctorsCarouselRef.current;
     if (!track) return;
-    return setupInfiniteCarouselScroll(track, isDoctorsPausedByClickRef);
+    const ctrl = setupInfiniteCarouselScroll(track, isDoctorsPausedByClickRef);
+    doctorsCarouselCtrlRef.current = ctrl;
+    return () => {
+      ctrl.cleanup();
+      doctorsCarouselCtrlRef.current = null;
+    };
   }, []);
 
   useEffect(() => {
     const track = reviewsCarouselRef.current;
     if (!track) return;
-    return setupInfiniteCarouselScroll(track, isReviewsPausedByClickRef);
+    const ctrl = setupInfiniteCarouselScroll(track, isReviewsPausedByClickRef);
+    reviewsCarouselCtrlRef.current = ctrl;
+    return () => {
+      ctrl.cleanup();
+      reviewsCarouselCtrlRef.current = null;
+    };
   }, []);
 
   const handleReviewCardTap = (reviewId: string, e: React.SyntheticEvent) => {
-    if (
-      (e.type === "touchend" || e.type === "click") &&
-      getCarouselSwipeDeltaPx(e, ".review-card") > CAROUSEL_SWIPE_THRESHOLD_PX
-    ) {
-      return;
-    }
-    e.stopPropagation();
+    handleSelectableCardTap(reviewId, e, ".review-card", reviewTapLockRef, handleReviewCardClick);
+  };
 
-    if (e.type === "touchend") {
-      reviewTapLockRef.current = Date.now();
-      handleReviewCardClick(reviewId);
-      return;
-    }
+  const handleOfferCardClick = (offerId: string) => {
+    setSelectedOfferId((current) => (current === offerId ? null : offerId));
+  };
 
-    if (e.type === "click" && Date.now() - reviewTapLockRef.current < 400) {
-      return;
-    }
-
-    handleReviewCardClick(reviewId);
+  const handleOfferCardTap = (offerId: string, e: React.SyntheticEvent) => {
+    handleSelectableCardTap(offerId, e, ".offer-pill-card", offerTapLockRef, handleOfferCardClick);
   };
 
   /* Mobile Complete Care wheel — one-shot reveal when scrolled into view */
@@ -1054,7 +1120,14 @@ export default function Home() {
           <p className="section-sub">Limited-time savings for Chennai families &mdash; clear value from the very first visit.</p>
 
           <div className="offer-cards-row">
-            <div className="offer-pill-card c1">
+            <div
+              className={`offer-pill-card c1${selectedOfferId === "offer-c1" ? " offer-pill-card-selected" : ""}`}
+              onTouchStart={recordTouchStart}
+              onClick={(e) => handleOfferCardTap("offer-c1", e)}
+              onTouchEnd={(e) => handleOfferCardTap("offer-c1", e)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="offer-icon-wrap">
                 <div className="offer-ribbon-icon">
                   <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="M11 18l-4 10 9-4 9 4-4-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="16" cy="11" r="3" stroke="currentColor" strokeWidth="1.5" strokeDasharray="2 2" /></svg>
@@ -1063,7 +1136,14 @@ export default function Home() {
               <div className="offer-amount">Free</div><div className="offer-label">First Consultation</div>
             </div>
 
-            <div className="offer-pill-card c2">
+            <div
+              className={`offer-pill-card c2${selectedOfferId === "offer-c2" ? " offer-pill-card-selected" : ""}`}
+              onTouchStart={recordTouchStart}
+              onClick={(e) => handleOfferCardTap("offer-c2", e)}
+              onTouchEnd={(e) => handleOfferCardTap("offer-c2", e)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="offer-icon-wrap">
                 <div className="offer-ribbon-icon">
                   <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="M11 18l-4 10 9-4 9 4-4-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M13 11h3m0 0h1a1.5 1.5 0 000-3H13v6h4a1.5 1.5 0 000-3H16z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -1072,7 +1152,14 @@ export default function Home() {
               <div className="offer-amount">₹10,000 Off</div><div className="offer-label">On your pregnancy journey</div>
             </div>
 
-            <div className="offer-pill-card c3">
+            <div
+              className={`offer-pill-card c3${selectedOfferId === "offer-c3" ? " offer-pill-card-selected" : ""}`}
+              onTouchStart={recordTouchStart}
+              onClick={(e) => handleOfferCardTap("offer-c3", e)}
+              onTouchEnd={(e) => handleOfferCardTap("offer-c3", e)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="offer-icon-wrap">
                 <div className="offer-ribbon-icon">
                   <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="M11 18l-4 10 9-4 9 4-4-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><path d="M13 14h6M16 8v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
@@ -1081,7 +1168,14 @@ export default function Home() {
               <div className="offer-amount">₹5,000 off</div><div className="offer-label">On your final bill</div>
             </div>
 
-            <div className="offer-pill-card c4">
+            <div
+              className={`offer-pill-card c4${selectedOfferId === "offer-c4" ? " offer-pill-card-selected" : ""}`}
+              onTouchStart={recordTouchStart}
+              onClick={(e) => handleOfferCardTap("offer-c4", e)}
+              onTouchEnd={(e) => handleOfferCardTap("offer-c4", e)}
+              role="button"
+              tabIndex={0}
+            >
               <div className="offer-icon-wrap">
                 <div className="offer-ribbon-icon">
                   <svg viewBox="0 0 32 32" fill="none"><circle cx="16" cy="11" r="8" stroke="currentColor" strokeWidth="2" /><path d="M11 18l-4 10 9-4 9 4-4-10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><circle cx="16" cy="11" r="4" stroke="currentColor" strokeWidth="1.5" /><circle cx="16" cy="11" r="1.5" fill="currentColor" /></svg>
@@ -1103,7 +1197,7 @@ export default function Home() {
 
         <div className="doctors-slider-wrap">
             <div
-              className={`doctors-track-outer${pausedDoctorId ? " carousel-paused" : ""}`}
+              className="doctors-track-outer"
               ref={doctorsCarouselRef}
             >
               <div className="doctors-slider">
@@ -1261,7 +1355,7 @@ export default function Home() {
         </div>
 
         <div
-          className={`review-marquee${pausedReviewId ? " carousel-paused" : ""}`}
+          className="review-marquee"
           ref={reviewsCarouselRef}
         >
             <div className="review-row">
