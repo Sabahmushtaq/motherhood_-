@@ -1296,17 +1296,21 @@ footer .footer-legal a{color:var(--lavender-mid)}
   /* Stats */
   .stat-num{font-size:22px !important;font-family:'Montserrat',sans-serif !important;}
   .stat-label{font-size:14px !important;font-family:'Montserrat',sans-serif !important;}
-  /* Doctors */
-  .doctor-card{min-height:360px !important;}
-  .doctor-name{font-size:17px !important;}
-  .doctor-qual,.doctor-type{font-size:14.5px !important;}
-  .doctor-location{font-size:13.5px !important;}
-  .doctor-btn{font-size:15.5px !important;margin-top:auto !important;}
-  /* Reviews */
-  .review-name{font-size:17px !important;}
-  .review-meta{font-size:14px !important;}
-  .review-card p{font-size:16px !important;}
-  .review-stars{font-size:15px !important;}
+  /* Doctors & reviews — same card size as desktop */
+  .doctor-card{
+    flex:0 0 210px !important;
+    min-width:210px !important;
+    max-width:210px !important;
+    min-height:330px !important;
+    padding:24px 18px 18px !important;
+  }
+  .review-card{
+    width:270px !important;
+    flex:0 0 270px !important;
+    min-width:270px !important;
+    max-width:270px !important;
+    padding:15px 17px !important;
+  }
   .rpb-score{font-size:14px !important;line-height:1.2 !important;}
   .rpb-label{font-size:10px !important;line-height:1.25 !important;margin-top:2px !important;}
   .reviews-head{align-items:flex-start;gap:10px;overflow:visible;}
@@ -1715,17 +1719,6 @@ footer .footer-legal a{color:var(--lavender-mid)}
   }
   .doctors-track-outer{padding:8px 0 !important;touch-action:pan-y !important;}
   .doctors-slider,.review-row{padding:0 !important;}
-  /* Peek carousel: 1 full card centered + half card on each side */
-  .doctor-card{
-    flex:0 0 calc((100vw - 32px) / 2) !important;
-    min-width:calc((100vw - 32px) / 2) !important;
-    max-width:calc((100vw - 32px) / 2) !important;
-  }
-  .review-card{
-    width:calc((100vw - 26px) / 2) !important;
-    flex:0 0 calc((100vw - 26px) / 2) !important;
-    max-width:calc((100vw - 26px) / 2) !important;
-  }
   .review-marquee{
     width:calc(100% + 36px) !important;
     max-width:100vw !important;
@@ -1792,10 +1785,6 @@ footer .footer-legal a{color:var(--lavender-mid)}
   .section-sub{font-size:17.5px !important;}
   .offer-amount{font-size:23px !important;}
   .offer-label{font-size:15.5px !important;}
-  .doctor-name{font-size:17px !important;}
-  .doctor-qual,.doctor-type{font-size:14.5px !important;}
-  .review-name{font-size:17px !important;}
-  .review-card p{font-size:16px !important;}
   .location-list li{font-size:17px !important;}
   .btn-primary,.btn-secondary{font-size:16.5px !important;}
   .sticky-mobile .btn-primary,
