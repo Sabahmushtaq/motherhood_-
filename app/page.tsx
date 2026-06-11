@@ -21,7 +21,7 @@ interface Doctor {
   specialty: string;
   location: string;
   initials: string;
-  bgGradient: string;
+  avatarColor: string;
 }
 
 interface Review {
@@ -40,7 +40,7 @@ const CHENNAI_DOCTORS: Doctor[] = [
     specialty: "Senior Obstetrician & Gynaecologist",
     location: "Alwarpet",
     initials: "PS",
-    bgGradient: "linear-gradient(135deg,#9b85cc,#6b55a0)"
+    avatarColor: "#DB5070"
   },
   {
     id: "dr-kavitha-r",
@@ -49,7 +49,7 @@ const CHENNAI_DOCTORS: Doctor[] = [
     specialty: "Maternal-Fetal Medicine Specialist",
     location: "Alwarpet",
     initials: "KR",
-    bgGradient: "linear-gradient(135deg,#e8a0b8,#b8364d)"
+    avatarColor: "#0057A4"
   },
   {
     id: "dr-anand",
@@ -58,7 +58,7 @@ const CHENNAI_DOCTORS: Doctor[] = [
     specialty: "Senior Neonatologist",
     location: "Alwarpet",
     initials: "AK",
-    bgGradient: "linear-gradient(135deg,#5478a0,#3d5a7a)"
+    avatarColor: "#DB5070"
   },
   {
     id: "dr-lakshmi",
@@ -67,7 +67,7 @@ const CHENNAI_DOCTORS: Doctor[] = [
     specialty: "Consultant Obstetrician",
     location: "Alwarpet",
     initials: "LV",
-    bgGradient: "linear-gradient(135deg,#e8a0b8,#b8364d)"
+    avatarColor: "#0057A4"
   },
   {
     id: "dr-rajesh",
@@ -76,7 +76,7 @@ const CHENNAI_DOCTORS: Doctor[] = [
     specialty: "Anaesthesiologist & Pain Specialist",
     location: "Alwarpet",
     initials: "RM",
-    bgGradient: "linear-gradient(135deg,#5478a0,#3d5a7a)"
+    avatarColor: "#DB5070"
   }
 ];
 
@@ -130,12 +130,12 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg1)" />
-        <path d="M20 38 Q18 28 24 23 Q32 17 40 23 Q46 28 44 38 Q42 46 32 50 Q22 46 20 38Z" fill="#f2d0e8" stroke="#c084b0" strokeWidth="1.2" />
-        <circle cx="32" cy="32" r="9" fill="#fff0f8" stroke="#d670a8" strokeWidth="1.5" />
-        <circle cx="32" cy="32" r="5.5" fill="#ffd6ee" stroke="#d670a8" strokeWidth="1" />
-        <circle cx="32" cy="32" r="2.5" fill="#d670a8" />
-        <path d="M28 22 Q28 19 30.5 19 Q32 19 32 20.5 Q32 19 33.5 19 Q36 19 36 22 Q36 25 32 28 Q28 25 28 22Z" fill="#e8609a" opacity="0.85" />
-        <defs><radialGradient id="bg1" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fdf0fa" /><stop offset="100%" stopColor="#ede0f8" /></radialGradient></defs>
+        <path d="M20 38 Q18 28 24 23 Q32 17 40 23 Q46 28 44 38 Q42 46 32 50 Q22 46 20 38Z" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.2" />
+        <circle cx="32" cy="32" r="9" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.5" />
+        <circle cx="32" cy="32" r="5.5" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1" />
+        <circle cx="32" cy="32" r="2.5" fill="#0057A4" />
+        <path d="M28 22 Q28 19 30.5 19 Q32 19 32 20.5 Q32 19 33.5 19 Q36 19 36 22 Q36 25 32 28 Q28 25 28 22Z" fill="#0057A4" opacity="0.85" />
+        <defs><radialGradient id="bg1" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   },
@@ -149,16 +149,16 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg2)" />
-        <ellipse cx="32" cy="34" rx="18" ry="20" fill="#eee0fa" stroke="#b89edc" strokeWidth="1.2" strokeDasharray="3 2" />
-        <path d="M38 26 Q42 30 40 36 Q38 42 32 43 Q26 44 23 40 Q20 36 22 31 Q24 26 29 24 Q34 22 38 26Z" fill="#ffd6ee" stroke="#d080b8" strokeWidth="1.3" />
-        <circle cx="38" cy="25" r="5.5" fill="#ffe8f4" stroke="#d080b8" strokeWidth="1.2" />
-        <circle cx="37" cy="24" r="1.2" fill="#9b55a0" />
-        <path d="M26 33 Q21 32 20 29" stroke="#d080b8" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="33" cy="34" r="2" fill="#e8609a" opacity="0.8">
+        <ellipse cx="32" cy="34" rx="18" ry="20" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.2" strokeDasharray="3 2" />
+        <path d="M38 26 Q42 30 40 36 Q38 42 32 43 Q26 44 23 40 Q20 36 22 31 Q24 26 29 24 Q34 22 38 26Z" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.3" />
+        <circle cx="38" cy="25" r="5.5" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.2" />
+        <circle cx="37" cy="24" r="1.2" fill="#0057A4" />
+        <path d="M26 33 Q21 32 20 29" stroke="#0057A4" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="33" cy="34" r="2" fill="#0057A4" opacity="0.8">
           <animate attributeName="r" values="2;3;2" dur="1.2s" repeatCount="indefinite" />
           <animate attributeName="opacity" values="0.8;0.4;0.8" dur="1.2s" repeatCount="indefinite" />
         </circle>
-        <defs><radialGradient id="bg2" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fdf0fa" /><stop offset="100%" stopColor="#e8d8f8" /></radialGradient></defs>
+        <defs><radialGradient id="bg2" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   },
@@ -172,16 +172,16 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg3)" />
-        <ellipse cx="32" cy="34" rx="19" ry="21" fill="#ecddf8" stroke="#a878cc" strokeWidth="1" opacity="0.6" />
-        <path d="M40 22 Q46 29 43 38 Q40 46 32 47 Q24 47 21 40 Q18 34 21 27 Q24 20 32 18 Q37 17 40 22Z" fill="#fce8f4" stroke="#c078b0" strokeWidth="1.4" />
-        <circle cx="41" cy="21" r="7" fill="#ffe8f4" stroke="#c078b0" strokeWidth="1.3" />
-        <ellipse cx="40" cy="20" rx="1.3" ry="1" fill="#7a4090" />
-        <path d="M41 22 Q42 23 41.5 23.5" stroke="#c078b0" strokeWidth="0.8" strokeLinecap="round" />
-        <path d="M28 30 Q22 28 20 24" stroke="#c078b0" strokeWidth="1.5" strokeLinecap="round" />
-        <circle cx="20" cy="23.5" r="2" fill="#fce8f4" stroke="#c078b0" strokeWidth="1" />
-        <path d="M28 40 Q26 46 30 48" stroke="#c078b0" strokeWidth="1.5" strokeLinecap="round" />
-        <ellipse cx="31" cy="48.5" rx="2.5" ry="1.2" fill="#fce8f4" stroke="#c078b0" strokeWidth="1" />
-        <defs><radialGradient id="bg3" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fef4ff" /><stop offset="100%" stopColor="#e0d0f5" /></radialGradient></defs>
+        <ellipse cx="32" cy="34" rx="19" ry="21" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1" opacity="0.6" />
+        <path d="M40 22 Q46 29 43 38 Q40 46 32 47 Q24 47 21 40 Q18 34 21 27 Q24 20 32 18 Q37 17 40 22Z" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.4" />
+        <circle cx="41" cy="21" r="7" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.3" />
+        <ellipse cx="40" cy="20" rx="1.3" ry="1" fill="#0057A4" />
+        <path d="M41 22 Q42 23 41.5 23.5" stroke="#0057A4" strokeWidth="0.8" strokeLinecap="round" />
+        <path d="M28 30 Q22 28 20 24" stroke="#0057A4" strokeWidth="1.5" strokeLinecap="round" />
+        <circle cx="20" cy="23.5" r="2" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1" />
+        <path d="M28 40 Q26 46 30 48" stroke="#0057A4" strokeWidth="1.5" strokeLinecap="round" />
+        <ellipse cx="31" cy="48.5" rx="2.5" ry="1.2" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1" />
+        <defs><radialGradient id="bg3" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   },
@@ -195,18 +195,18 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg4)" />
-        <ellipse cx="32" cy="33" rx="20" ry="22" fill="#e8d8f8" stroke="#9878cc" strokeWidth="1.2" opacity="0.55" />
-        <ellipse cx="32" cy="37" rx="10" ry="13" fill="#fde8f4" stroke="#bf70b0" strokeWidth="1.3" />
-        <circle cx="32" cy="50" r="8" fill="#ffe4f0" stroke="#bf70b0" strokeWidth="1.3" />
-        <ellipse cx="29.5" cy="50" rx="1.2" ry="1" fill="#7a3a88" />
-        <ellipse cx="34.5" cy="50" rx="1.2" ry="1" fill="#7a3a88" />
-        <path d="M30 53 Q32 54.5 34 53" stroke="#bf70b0" strokeWidth="1" strokeLinecap="round" />
-        <path d="M22 34 Q18 33 19 29" stroke="#bf70b0" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M42 34 Q46 33 45 29" stroke="#bf70b0" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M24 30 Q22 22 28 18" stroke="#bf70b0" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M40 30 Q42 22 36 18" stroke="#bf70b0" strokeWidth="1.4" strokeLinecap="round" />
-        <path d="M40 49 Q42 50 40 52" stroke="#bf70b0" strokeWidth="1" strokeLinecap="round" fill="none" />
-        <defs><radialGradient id="bg4" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fef2ff" /><stop offset="100%" stopColor="#ddd0f5" /></radialGradient></defs>
+        <ellipse cx="32" cy="33" rx="20" ry="22" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.2" opacity="0.55" />
+        <ellipse cx="32" cy="37" rx="10" ry="13" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.3" />
+        <circle cx="32" cy="50" r="8" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.3" />
+        <ellipse cx="29.5" cy="50" rx="1.2" ry="1" fill="#0057A4" />
+        <ellipse cx="34.5" cy="50" rx="1.2" ry="1" fill="#0057A4" />
+        <path d="M30 53 Q32 54.5 34 53" stroke="#0057A4" strokeWidth="1" strokeLinecap="round" />
+        <path d="M22 34 Q18 33 19 29" stroke="#0057A4" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M42 34 Q46 33 45 29" stroke="#0057A4" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M24 30 Q22 22 28 18" stroke="#0057A4" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M40 30 Q42 22 36 18" stroke="#0057A4" strokeWidth="1.4" strokeLinecap="round" />
+        <path d="M40 49 Q42 50 40 52" stroke="#0057A4" strokeWidth="1" strokeLinecap="round" fill="none" />
+        <defs><radialGradient id="bg4" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   },
@@ -220,18 +220,18 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg5)" />
-        <circle cx="32" cy="32" r="22" fill="rgba(255,220,240,0.4)" />
-        <path d="M14 36 Q14 22 32 20 Q50 22 50 36 Q50 52 32 54 Q14 52 14 36Z" fill="#fde0f0" stroke="#d070b0" strokeWidth="1.2" />
-        <circle cx="32" cy="26" r="10" fill="#ffe8f4" stroke="#d070b0" strokeWidth="1.3" />
-        <path d="M27.5 25.5 Q29 24.5 30.5 25.5" stroke="#9060a0" strokeWidth="1.2" strokeLinecap="round" />
-        <path d="M33.5 25.5 Q35 24.5 36.5 25.5" stroke="#9060a0" strokeWidth="1.2" strokeLinecap="round" />
-        <ellipse cx="32" cy="27.5" rx="1.2" ry="0.8" fill="#e090c0" opacity="0.7" />
-        <path d="M29.5 30 Q32 32 34.5 30" stroke="#d060a0" strokeWidth="1.1" strokeLinecap="round" />
-        <circle cx="18" cy="40" r="4" fill="#ffe8f4" stroke="#d070b0" strokeWidth="1.1" />
-        <path d="M10 18 L11 16 L12 18 L10 17 L12 17Z" fill="#d4a0e0" opacity="0.8" />
-        <path d="M50 15 L51 13 L52 15 L50 14 L52 14Z" fill="#e8a0c8" opacity="0.8" />
-        <path d="M52 44 L53 42 L54 44 L52 43 L54 43Z" fill="#c090d8" opacity="0.7" />
-        <defs><radialGradient id="bg5" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fff0fa" /><stop offset="100%" stopColor="#e8d8f8" /></radialGradient></defs>
+        <circle cx="32" cy="32" r="22" fill="rgba(220,242,253,0.45)" />
+        <path d="M14 36 Q14 22 32 20 Q50 22 50 36 Q50 52 32 54 Q14 52 14 36Z" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.2" />
+        <circle cx="32" cy="26" r="10" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.3" />
+        <path d="M27.5 25.5 Q29 24.5 30.5 25.5" stroke="#0057A4" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M33.5 25.5 Q35 24.5 36.5 25.5" stroke="#0057A4" strokeWidth="1.2" strokeLinecap="round" />
+        <ellipse cx="32" cy="27.5" rx="1.2" ry="0.8" fill="#0057A4" opacity="0.7" />
+        <path d="M29.5 30 Q32 32 34.5 30" stroke="#0057A4" strokeWidth="1.1" strokeLinecap="round" />
+        <circle cx="18" cy="40" r="4" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.1" />
+        <path d="M10 18 L11 16 L12 18 L10 17 L12 17Z" fill="#0057A4" opacity="0.8" />
+        <path d="M50 15 L51 13 L52 15 L50 14 L52 14Z" fill="#0057A4" opacity="0.8" />
+        <path d="M52 44 L53 42 L54 44 L52 43 L54 43Z" fill="#0057A4" opacity="0.7" />
+        <defs><radialGradient id="bg5" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   },
@@ -245,22 +245,22 @@ const MATERNITY_STAGES: Stage[] = [
     renderIcon: () => (
       <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <circle cx="32" cy="32" r="30" fill="url(#bg6)" />
-        <path d="M12 52 Q10 40 14 32 Q18 24 26 22 Q34 20 38 26 Q46 30 46 42 Q46 52 38 56 Q24 60 12 52Z" fill="#ecdaf8" stroke="#a878d0" strokeWidth="1" opacity="0.5" />
-        <path d="M14 50 Q12 38 18 30" stroke="#9868c0" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <path d="M50 50 Q52 38 46 30" stroke="#9868c0" strokeWidth="2.5" strokeLinecap="round" fill="none" />
-        <ellipse cx="32" cy="42" rx="10" ry="9" fill="#fde8f2" stroke="#c870b8" strokeWidth="1.3" />
-        <circle cx="32" cy="30" r="9" fill="#ffe8f4" stroke="#c870b8" strokeWidth="1.3" />
-        <path d="M26 23 Q28 20 32 22" stroke="#c870b8" strokeWidth="1.2" strokeLinecap="round" />
-        <path d="M32 22 Q36 20 38 23" stroke="#c870b8" strokeWidth="1.2" strokeLinecap="round" />
-        <ellipse cx="28.5" cy="30" rx="1.5" ry="1.8" fill="#6a3a88" />
-        <ellipse cx="35.5" cy="30" rx="1.5" ry="1.8" fill="#6a3a88" />
+        <path d="M12 52 Q10 40 14 32 Q18 24 26 22 Q34 20 38 26 Q46 30 46 42 Q46 52 38 56 Q24 60 12 52Z" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1" opacity="0.5" />
+        <path d="M14 50 Q12 38 18 30" stroke="#0057A4" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <path d="M50 50 Q52 38 46 30" stroke="#0057A4" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+        <ellipse cx="32" cy="42" rx="10" ry="9" fill="#DCF2FD" stroke="#0057A4" strokeWidth="1.3" />
+        <circle cx="32" cy="30" r="9" fill="#FFFFFF" stroke="#0057A4" strokeWidth="1.3" />
+        <path d="M26 23 Q28 20 32 22" stroke="#0057A4" strokeWidth="1.2" strokeLinecap="round" />
+        <path d="M32 22 Q36 20 38 23" stroke="#0057A4" strokeWidth="1.2" strokeLinecap="round" />
+        <ellipse cx="28.5" cy="30" rx="1.5" ry="1.8" fill="#0057A4" />
+        <ellipse cx="35.5" cy="30" rx="1.5" ry="1.8" fill="#0057A4" />
         <circle cx="29" cy="29.3" r="0.6" fill="#fff" />
         <circle cx="36" cy="29.3" r="0.6" fill="#fff" />
-        <path d="M28.5 34 Q32 37 35.5 34" stroke="#c870b8" strokeWidth="1.2" strokeLinecap="round" />
-        <ellipse cx="26" cy="33" rx="2.5" ry="1.5" fill="#f4a0c0" opacity="0.45" />
-        <ellipse cx="38" cy="33" rx="2.5" ry="1.5" fill="#f4a0c0" opacity="0.45" />
-        <path d="M29 16 Q29 13.5 31 13.5 Q32 13.5 32 14.5 Q32 13.5 33 13.5 Q35 13.5 35 16 Q35 18.5 32 21 Q29 18.5 29 16Z" fill="#e860a0" opacity="0.85" />
-        <defs><radialGradient id="bg6" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#fef6ff" /><stop offset="100%" stopColor="#dfd0f8" /></radialGradient></defs>
+        <path d="M28.5 34 Q32 37 35.5 34" stroke="#0057A4" strokeWidth="1.2" strokeLinecap="round" />
+        <ellipse cx="26" cy="33" rx="2.5" ry="1.5" fill="#0057A4" opacity="0.45" />
+        <ellipse cx="38" cy="33" rx="2.5" ry="1.5" fill="#0057A4" opacity="0.45" />
+        <path d="M29 16 Q29 13.5 31 13.5 Q32 13.5 32 14.5 Q32 13.5 33 13.5 Q35 13.5 35 16 Q35 18.5 32 21 Q29 18.5 29 16Z" fill="#0057A4" opacity="0.85" />
+        <defs><radialGradient id="bg6" cx="40%" cy="35%" r="60%"><stop offset="0%" stopColor="#FFFFFF" /><stop offset="100%" stopColor="#DCF2FD" /></radialGradient></defs>
       </svg>
     )
   }
@@ -398,8 +398,22 @@ function setupInfiniteCarouselScroll(
   const loopPos = () => {
     const sw = setWidth();
     if (sw <= 0) return;
-    while (pos < -sw) pos += sw;
-    while (pos > 0)   pos -= sw;
+    while (pos <= -sw) pos += sw;
+    while (pos > 0) pos -= sw;
+  };
+
+  // Seamless wrap while dragging — adjusts touchStartPos so finger tracking stays true
+  const loopPosDuringDrag = () => {
+    const sw = setWidth();
+    if (sw <= 0) return;
+    while (pos > 0) {
+      pos -= sw;
+      touchStartPos -= sw;
+    }
+    while (pos <= -sw) {
+      pos += sw;
+      touchStartPos += sw;
+    }
   };
 
   const applyPos = () => {
@@ -411,7 +425,8 @@ function setupInfiniteCarouselScroll(
     if (initialized) return;
     const sw = setWidth();
     if (sw <= 0) return;
-    pos = 0;
+    // Start one set in so swiping backward from the first card loops smoothly
+    pos = -sw;
     applyPos();
     initialized = true;
   };
@@ -430,7 +445,7 @@ function setupInfiniteCarouselScroll(
     if (!isTouching) return;
     const dx = e.touches[0].clientX - touchStartX;
     pos = touchStartPos + dx;
-    loopPos();
+    loopPosDuringDrag();
     applyPos();
 
     const now = performance.now();
@@ -445,7 +460,8 @@ function setupInfiniteCarouselScroll(
 
   const onTouchEnd = () => {
     isTouching = false;
-    velocity = 0;
+    loopPos();
+    applyPos();
   };
 
   const step = (ts: number) => {
@@ -460,8 +476,8 @@ function setupInfiniteCarouselScroll(
         velocity *= FRICTION;
         loopPos();
         applyPos();
-      } else if (isInView && !isHovered && !isPausedRef.current) {
-        // Smooth auto-scroll
+      } else if (isInView && !isHovered && !isPausedRef.current && isDesktop()) {
+        // Auto-scroll on desktop only — mobile is manual swipe with infinite loop
         velocity = 0;
         pos -= (AUTO_SPEED * dt) / 1000;
         loopPos();
@@ -672,7 +688,7 @@ function DoctorCarouselCard({
       aria-hidden={isPrimary ? undefined : true}
     >
       <div className="doctor-photo">
-        <div className="doctor-avatar" style={{ background: doc.bgGradient }}>
+        <div className="doctor-avatar" style={{ backgroundColor: doc.avatarColor }}>
           {doc.initials}
         </div>
       </div>
@@ -758,6 +774,7 @@ export default function Home() {
 
   const offerTapLockRef = useRef(0);
   const [selectedOfferId, setSelectedOfferId] = useState<string | null>(null);
+  const [activeStageId, setActiveStageId] = useState<string | null>(null);
 
   useEffect(() => {
     isDoctorsPausedByClickRef.current = pausedDoctorId !== null;
@@ -815,6 +832,10 @@ export default function Home() {
 
   const handleOfferCardTap = (offerId: string, e: React.SyntheticEvent) => {
     handleSelectableCardTap(offerId, e, ".offer-pill-card", offerTapLockRef, handleOfferCardClick);
+  };
+
+  const handleStageIconClick = (stageId: string) => {
+    setActiveStageId((current) => (current === stageId ? null : stageId));
   };
 
   /* Mobile Complete Care wheel — one-shot reveal when scrolled into view */
@@ -1021,10 +1042,10 @@ export default function Home() {
                       </svg>
                     </div>
                     <div className="form-badge" style={{ marginBottom: "14px" }}>✦ Consultation Requested</div>
-                    <h3 style={{ fontFamily: "'Roboto', sans-serif", fontWeight: 800, fontSize: "20px", color: "#2c2535", marginBottom: "10px", lineHeight: "1.2" }}>
+                    <h3 style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 700, fontSize: "20px", color: "#0057A4", marginBottom: "10px", lineHeight: "1.2" }}>
                       Thank You!
                     </h3>
-                    <p style={{ fontSize: "13px", color: "#3a3245", fontWeight: 500, lineHeight: "1.65", maxWidth: "260px" }}>
+                    <p style={{ fontFamily: "'Montserrat', sans-serif", fontSize: "15px", color: "#4A3F40", fontWeight: 400, lineHeight: "1.6", maxWidth: "260px" }}>
                       Our Chennai care team has received your request and will call you shortly to confirm your consultation slot.
                     </p>
                     <hr className="success-divider" />
@@ -1044,9 +1065,9 @@ export default function Home() {
                           placeholder="Full name"
                           value={formData.name}
                           onChange={handleInputChange}
-                          className={formErrors.name ? "border-[#b8364d]" : ""}
+                          className={formErrors.name ? "border-[#DB5070]" : ""}
                         />
-                        {formErrors.name && <span className="text-[10px] font-semibold text-[#b8364d] mt-0.5">{formErrors.name}</span>}
+                        {formErrors.name && <span className="text-[10px] font-semibold text-[#DB5070] mt-0.5">{formErrors.name}</span>}
                       </div>
                       <div className="form-field">
                         <input
@@ -1056,9 +1077,9 @@ export default function Home() {
                           maxLength={10}
                           value={formData.phone}
                           onChange={handleInputChange}
-                          className={formErrors.phone ? "border-[#b8364d]" : ""}
+                          className={formErrors.phone ? "border-[#DB5070]" : ""}
                         />
-                        {formErrors.phone && <span className="text-[10px] font-semibold text-[#b8364d] mt-0.5">{formErrors.phone}</span>}
+                        {formErrors.phone && <span className="text-[10px] font-semibold text-[#DB5070] mt-0.5">{formErrors.phone}</span>}
                       </div>
                       <div className="form-field">
                         <select
@@ -1117,7 +1138,6 @@ export default function Home() {
       <section className="package-highlight" id="offers">
         <div className="section-inner">
           <h2 className="section-title">Exclusive offers with attractive benefits</h2>
-          <p className="section-sub">Limited-time savings for Chennai families &mdash; clear value from the very first visit.</p>
 
           <div className="offer-cards-row">
             <div
@@ -1192,7 +1212,6 @@ export default function Home() {
       <section className="doctors-section" id="doctors">
         <div className="section-inner">
           <h2 className="section-title">Expert doctors, dedicated to your journey</h2>
-          <p className="section-sub">Our Chennai team includes senior obstetricians, neonatologists, and maternal-fetal medicine specialists.</p>
         </div>
 
         <div className="doctors-slider-wrap">
@@ -1224,15 +1243,23 @@ export default function Home() {
               <div className="lc-pulse"></div>
               <span>Complete Care &middot; Every Stage</span>
             </div>
-            <h2 className="section-title">We Complete Care &mdash; <em style={{ fontStyle: "normal", color: "var(--lavender-dark)" }}>Every Step of the Way</em></h2>
-            <p className="section-sub" style={{ margin: "0 auto" }}>Our care doesn&rsquo;t begin at delivery &mdash; it begins at conception. <span className="mobile-hide-inline">We walk beside you through every milestone, every scan, every heartbeat, until your baby is safe in your arms.</span></p>
+            <h2 className="section-title">We Complete Care &mdash; Every Step of the Way</h2>
           </div>
 
           <div className="lc-track">
             <div className="lc-steps">
               {MATERNITY_STAGES.map((stage, idx) => (
-                <div key={stage.id} className="lc-step">
-                  <div className="lc-icon-ring">
+                <div
+                  key={stage.id}
+                  className={`lc-step${activeStageId === stage.id ? " lc-step-active" : ""}`}
+                >
+                  <button
+                    type="button"
+                    className="lc-icon-ring"
+                    aria-label={`${stage.title} — show stage details`}
+                    aria-pressed={activeStageId === stage.id}
+                    onClick={() => handleStageIconClick(stage.id)}
+                  >
                     <div className="lc-icon-stack">
                       <div className="lc-orbit-spin" aria-hidden="true">
                         <span className="lc-orbit-dot" />
@@ -1241,7 +1268,7 @@ export default function Home() {
                         {stage.renderIcon()}
                       </div>
                     </div>
-                  </div>
+                  </button>
                   <div className="lc-connector-dot"></div>
                   <div className={`lc-card ${idx % 2 === 1 ? "mt-[48px]" : ""}`}>
                     <div className="lc-step-num">{stage.num}</div>
@@ -1287,7 +1314,7 @@ export default function Home() {
         <div className="section-inner">
           <div className="reviews-head">
             <div>
-              <h2 className="section-title" style={{ fontSize: "clamp(18px,2vw,28px)", marginBottom: "4px" }}>What mothers say about Motherhood</h2>
+              <h2 className="section-title">What mothers say about Motherhood</h2>
             </div>
             <div className="review-badges-row">
               <div className="review-platform-badge">
@@ -1380,7 +1407,6 @@ export default function Home() {
       <section className="location-section" id="location">
         <div className="section-inner">
           <h2 className="section-title">Motherhood Hospital Chennai</h2>
-          <p className="section-sub">Visit us or speak to the team directly &mdash; we are open 24 hours for all maternity and emergency needs.</p>
 
           <div className="location-grid">
             <div className="map-wrap">
