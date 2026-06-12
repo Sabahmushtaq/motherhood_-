@@ -794,6 +794,7 @@ export default function Home() {
   const isDoctorsPausedByClickRef = useRef(false);
   const isReviewsPausedByClickRef = useRef(false);
   const doctorTapLockRef = useRef(0);
+  const doctorPauseTimerRef = useRef<number | null>(null);
   const [pausedDoctorId, setPausedDoctorId] = useState<string | null>(null);
 
   const reviewTapLockRef = useRef(0);
@@ -808,11 +809,33 @@ export default function Home() {
   }, [pausedDoctorId]);
 
   useEffect(() => {
+    return () => {
+      if (doctorPauseTimerRef.current !== null) {
+        window.clearTimeout(doctorPauseTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     isReviewsPausedByClickRef.current = pausedReviewId !== null;
   }, [pausedReviewId]);
 
   const handleDoctorCardClick = (docId: string) => {
     doctorsCarouselCtrlRef.current?.stopMomentum();
+
+    const isMobileView = window.matchMedia("(max-width: 900px)").matches;
+    if (isMobileView) {
+      setPausedDoctorId(docId);
+      if (doctorPauseTimerRef.current !== null) {
+        window.clearTimeout(doctorPauseTimerRef.current);
+      }
+      doctorPauseTimerRef.current = window.setTimeout(() => {
+        setPausedDoctorId(null);
+        doctorPauseTimerRef.current = null;
+      }, 3000);
+      return;
+    }
+
     setPausedDoctorId((current) => (current === docId ? null : docId));
   };
 

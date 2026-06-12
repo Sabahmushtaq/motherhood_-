@@ -115,7 +115,8 @@ nav{
 .logo-wrap{
   display:flex;align-items:center;gap:10px;
   flex:0 0 auto;
-  min-width:0;
+  flex-shrink:0;
+  min-width:auto;
   overflow:visible;
 }
 .nav-right{display:flex;align-items:center;gap:12px;flex-shrink:0;margin-left:32px;}
@@ -152,7 +153,7 @@ nav{
   .stats-bar .stat-label{font-size:14px !important;}
 }
 @media(max-width:480px){
-  nav{padding:0 10px;height:60px;}
+  nav{padding:0 10px;height:72px;}
   .nav-right{margin-left:12px;gap:8px !important;}
   .nav-phone{
     font-size:14px !important;
@@ -1114,15 +1115,29 @@ footer .footer-legal a{color:var(--lavender-mid)}
     --content-max:100%;
     --hero-max:100%;
   }
-  nav{padding:0 14px 0 10px;height:60px;border-bottom:1px solid var(--line);box-shadow:0 1px 6px rgba(107,85,160,.08);background:#fff;backdrop-filter:none;}
-  .logo-wrap{margin-left:-6px;flex:0 0 auto !important;overflow:visible !important;}
+  nav{padding:0 14px 0 10px;height:72px;border-bottom:1px solid var(--line);box-shadow:0 1px 6px rgba(107,85,160,.08);background:#fff;backdrop-filter:none;}
+  .logo-wrap{
+    margin-left:-6px;
+    flex:0 0 auto !important;
+    flex-shrink:0 !important;
+    min-width:auto !important;
+    height:72px !important;
+    overflow:visible !important;
+    align-items:center !important;
+  }
   nav .logo-img{
-    height:60px !important;
-    min-height:60px !important;
-    max-height:60px !important;
+    height:72px !important;
+    min-height:72px !important;
+    max-height:72px !important;
     width:auto !important;
+    max-width:none !important;
+    flex:0 0 auto !important;
     flex-shrink:0 !important;
     object-fit:contain !important;
+    mix-blend-mode:normal !important;
+    background:transparent !important;
+    -webkit-backface-visibility:hidden;
+    backface-visibility:hidden;
   }
   .nav-phone{
     font-size:16px !important;
@@ -1137,7 +1152,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
   /* ── MOBILE HERO — photo flows into copy (no hard line between image & text) ── */
   .hero{
     display:block;
-    padding-top:60px;
+    padding-top:72px;
     background:var(--hero-wall-light);
     position:relative;
     overflow:hidden;
@@ -1767,7 +1782,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
   }
 }
 @media(max-width:640px){
-  nav{padding:0 10px;height:60px;}
+  nav{padding:0 10px;height:72px;}
   .hero-bg{aspect-ratio:4/3.1;}
   .hero-top-row{margin-top:-5.75rem;}
   .hero-content{padding:4rem 18px 14px 18px !important;}
@@ -2483,11 +2498,13 @@ section { padding-top: 26px !important; padding-bottom: 26px !important; }
     text-align:center;
   }
 }
-/* Logo: blend rectangle background with white navbar */
-nav .logo-img{
-  mix-blend-mode:multiply;
-  background:#ffffff;
-  flex-shrink:0;
+/* Logo: blend rectangle background with white navbar (desktop only — breaks sizing on iOS Safari) */
+@media(min-width:901px){
+  nav .logo-img{
+    mix-blend-mode:multiply;
+    background:#ffffff;
+    flex-shrink:0;
+  }
 }
 
 .review-card p { color:#000 !important; font-weight:700 !important; }
