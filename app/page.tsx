@@ -363,9 +363,17 @@ type CarouselController = {
   stopMomentum: () => void;
 };
 
+type CarouselScrollOptions = {
+  /** Enable auto-scroll on touch devices (default: desktop only). */
+  autoScrollOnMobile?: boolean;
+  /** Pause auto-scroll for this many ms after the user swipes or releases a hold. */
+  interactionPauseMs?: number;
+};
+
 function setupInfiniteCarouselScroll(
   container: HTMLDivElement,
-  isPausedRef: React.MutableRefObject<boolean>
+  isPausedRef: React.MutableRefObject<boolean>,
+  options: CarouselScrollOptions = {}
 ): CarouselController {
   const strip = container.firstElementChild as HTMLElement | null;
   if (!strip) {
@@ -391,6 +399,18 @@ function setupInfiniteCarouselScroll(
 
   const isDesktop = () =>
     window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+  const autoScrollEnabled = () =>
+    isDesktop() || options.autoScrollOnMobile === true;
+
+  const interactionPauseMs = options.interactionPauseMs ?? 0;
+  let interactionPausedUntil = 0;
+
+  const bumpInteractionPause = () => {
+    if (interactionPauseMs > 0) {
+      interactionPausedUntil = Date.now() + interactionPauseMs;
+    }
+  };
 
   const setWidth = () => strip.scrollWidth / CAROUSEL_SET_COUNT;
 
@@ -439,6 +459,7 @@ function setupInfiniteCarouselScroll(
     touchStartPos = pos;
     prevX         = touchStartX;
     prevTime      = performance.now();
+    bumpInteractionPause();
   };
 
   const onTouchMove = (e: TouchEvent) => {
@@ -462,6 +483,7 @@ function setupInfiniteCarouselScroll(
     isTouching = false;
     loopPos();
     applyPos();
+    bumpInteractionPause();
   };
 
   const step = (ts: number) => {
@@ -476,8 +498,13 @@ function setupInfiniteCarouselScroll(
         velocity *= FRICTION;
         loopPos();
         applyPos();
-      } else if (isInView && !isHovered && !isPausedRef.current && isDesktop()) {
-        // Auto-scroll on desktop only — mobile is manual swipe with infinite loop
+      } else if (
+        isInView &&
+        !isHovered &&
+        !isPausedRef.current &&
+        autoScrollEnabled() &&
+        Date.now() >= interactionPausedUntil
+      ) {
         velocity = 0;
         pos -= (AUTO_SPEED * dt) / 1000;
         loopPos();
@@ -803,7 +830,10 @@ export default function Home() {
   useEffect(() => {
     const track = doctorsCarouselRef.current;
     if (!track) return;
-    const ctrl = setupInfiniteCarouselScroll(track, isDoctorsPausedByClickRef);
+    const ctrl = setupInfiniteCarouselScroll(track, isDoctorsPausedByClickRef, {
+      autoScrollOnMobile: true,
+      interactionPauseMs: 3000,
+    });
     doctorsCarouselCtrlRef.current = ctrl;
     return () => {
       ctrl.cleanup();
@@ -814,7 +844,10 @@ export default function Home() {
   useEffect(() => {
     const track = reviewsCarouselRef.current;
     if (!track) return;
-    const ctrl = setupInfiniteCarouselScroll(track, isReviewsPausedByClickRef);
+    const ctrl = setupInfiniteCarouselScroll(track, isReviewsPausedByClickRef, {
+      autoScrollOnMobile: true,
+      interactionPauseMs: 3000,
+    });
     reviewsCarouselCtrlRef.current = ctrl;
     return () => {
       ctrl.cleanup();
@@ -878,6 +911,9 @@ export default function Home() {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [submitSuccess, setSubmitSuccess] = useState<boolean>(false);
   const [requestId, setRequestId] = useState<string>("");
+  const [highlightNameField, setHighlightNameField] = useState(false);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const highlightNameTimerRef = useRef<number | null>(null);
 
   /* Desktop: sticky Book Now after hero scrolls away. Mobile: always visible (CSS). */
   useEffect(() => {
@@ -967,14 +1003,50 @@ export default function Home() {
     }, 1500);
   };
 
-  const scrollToSection = (id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      const yOffset = -58;
-      const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-      window.scrollTo({ top: y, behavior: "smooth" });
+  const focusBookingNameField = () => {
+    if (submitSuccess) return;
+
+    const nameInput = nameInputRef.current;
+    if (!nameInput) return;
+
+    // Focus synchronously inside the click handler so mobile opens the keyboard.
+    nameInput.focus({ preventScroll: true });
+
+    setHighlightNameField(true);
+    if (highlightNameTimerRef.current !== null) {
+      window.clearTimeout(highlightNameTimerRef.current);
     }
+    highlightNameTimerRef.current = window.setTimeout(() => {
+      setHighlightNameField(false);
+      highlightNameTimerRef.current = null;
+    }, 2200);
   };
+
+  const openBookingForm = () => {
+    focusBookingNameField();
+
+    const bookingEl = document.getElementById("booking");
+    if (bookingEl) {
+      const navEl = document.querySelector("nav");
+      const yOffset = navEl ? -(navEl.getBoundingClientRect().height + 4) : -62;
+      const y = bookingEl.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      const isTouch =
+        window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+      window.scrollTo({ top: y, behavior: isTouch ? "auto" : "smooth" });
+    }
+
+    requestAnimationFrame(() => {
+      nameInputRef.current?.focus({ preventScroll: true });
+    });
+  };
+
+  useEffect(() => {
+    return () => {
+      if (highlightNameTimerRef.current !== null) {
+        window.clearTimeout(highlightNameTimerRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="page-shell relative min-h-screen flex flex-col font-sans select-none antialiased bg-[#faf8fc]">
@@ -995,7 +1067,7 @@ export default function Home() {
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.1 2.38a2 2 0 012-2.18h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.29 6.29l1.69-1.69a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" fill="currentColor" /></svg>
             <span className="nav-phone-text">080 695 49251</span>
           </a>
-          <button onClick={() => scrollToSection("booking")} className="nav-cta hidden sm:inline-block">Book Consultation</button>
+          <button onClick={openBookingForm} className="nav-cta hidden sm:inline-block">Book Consultation</button>
         </div>
       </nav>
 
@@ -1058,13 +1130,17 @@ export default function Home() {
                     <div className="form-sub">Our Chennai care team will help with packages, doctors &amp; next steps.</div>
                     
                     <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-                      <div className="form-field">
+                      <div className={`form-field${highlightNameField ? " name-field-highlight" : ""}`}>
                         <input
+                          ref={nameInputRef}
+                          id="booking-name"
                           type="text"
                           name="name"
                           placeholder="Full name"
                           value={formData.name}
                           onChange={handleInputChange}
+                          autoComplete="name"
+                          enterKeyHint="next"
                           className={formErrors.name ? "border-[#DB5070]" : ""}
                         />
                         {formErrors.name && <span className="text-[10px] font-semibold text-[#DB5070] mt-0.5">{formErrors.name}</span>}
@@ -1110,11 +1186,11 @@ export default function Home() {
 
       {/* ─── STICKY FLOATS (after banner) ─── */}
       <div className={`sticky-desktop${showDesktopSticky ? " is-visible" : ""}`} aria-hidden={!showDesktopSticky}>
-        <button type="button" onClick={() => scrollToSection("booking")} className="sticky-float">Book Now</button>
+        <button type="button" onClick={openBookingForm} className="sticky-float">Book Now</button>
       </div>
 
       <div className="sticky-mobile is-visible" aria-hidden={false}>
-        <button type="button" onClick={() => scrollToSection("booking")} className="btn-primary">Book Now</button>
+        <button type="button" onClick={openBookingForm} className="btn-primary">Book Now</button>
         <a href="tel:08069549251" className="btn-secondary">Call Now</a>
       </div>
 
@@ -1227,7 +1303,7 @@ export default function Home() {
                     setIndex={setIndex}
                     isPaused={pausedDoctorId === doc.id}
                     onTap={handleDoctorCardTap}
-                    onBook={() => scrollToSection("booking")}
+                    onBook={openBookingForm}
                   />
                 ))}
               </div>
@@ -1303,7 +1379,7 @@ export default function Home() {
                 <span>Senior OB &amp; NICU team available at every critical moment.</span>
               </div>
             </div>
-            <button type="button" onClick={() => scrollToSection("booking")} className="lc-btn-gold">Start Your Journey &rarr;</button>
+            <button type="button" onClick={openBookingForm} className="lc-btn-gold">Start Your Journey &rarr;</button>
           </div>
         </div>
       </section>
@@ -1429,7 +1505,7 @@ export default function Home() {
                 <li><span className="loc-icon">⭐</span>4.8 Google (1,956 reviews) &middot; 4.9 Practo (1,956 reviews)</li>
               </ul>
               <div className="location-actions">
-                <button onClick={() => scrollToSection("booking")} className="btn-primary">Book Now</button>
+                <button onClick={openBookingForm} className="btn-primary">Book Now</button>
                 <a href="tel:08069549251" className="btn-secondary">Call Now</a>
               </div>
             </div>
