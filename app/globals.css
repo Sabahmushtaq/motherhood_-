@@ -153,7 +153,7 @@ nav{
   .stats-bar .stat-label{font-size:14px !important;}
 }
 @media(max-width:480px){
-  nav{padding:0 10px;height:72px;}
+  nav{padding:0 10px;height:60px;}
   .nav-right{margin-left:12px;gap:8px !important;}
   .nav-phone{
     font-size:14px !important;
@@ -1115,20 +1115,20 @@ footer .footer-legal a{color:var(--lavender-mid)}
     --content-max:100%;
     --hero-max:100%;
   }
-  nav{padding:0 14px 0 10px;height:72px;border-bottom:1px solid var(--line);box-shadow:0 1px 6px rgba(107,85,160,.08);background:#fff;backdrop-filter:none;}
+  nav{padding:0 14px 0 10px;height:60px;border-bottom:1px solid var(--line);box-shadow:0 1px 6px rgba(107,85,160,.08);background:#fff;backdrop-filter:none;}
   .logo-wrap{
     margin-left:-6px;
     flex:0 0 auto !important;
     flex-shrink:0 !important;
     min-width:auto !important;
-    height:72px !important;
+    height:60px !important;
     overflow:visible !important;
     align-items:center !important;
   }
   nav .logo-img{
-    height:72px !important;
-    min-height:72px !important;
-    max-height:72px !important;
+    height:60px !important;
+    min-height:60px !important;
+    max-height:60px !important;
     width:auto !important;
     max-width:none !important;
     flex:0 0 auto !important;
@@ -1152,7 +1152,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
   /* ── MOBILE HERO — photo flows into copy (no hard line between image & text) ── */
   .hero{
     display:block;
-    padding-top:72px;
+    padding-top:60px;
     background:var(--hero-wall-light);
     position:relative;
     overflow:hidden;
@@ -1782,7 +1782,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
   }
 }
 @media(max-width:640px){
-  nav{padding:0 10px;height:72px;}
+  nav{padding:0 10px;height:60px;}
   .hero-bg{aspect-ratio:4/3.1;}
   .hero-top-row{margin-top:-5.75rem;}
   .hero-content{padding:4rem 18px 14px 18px !important;}
