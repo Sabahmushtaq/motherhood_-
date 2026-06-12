@@ -1404,23 +1404,26 @@ footer .footer-legal a{color:var(--lavender-mid)}
     margin-right:auto !important;
   }
   #complete-care .lc-track{
-    --lc-wheel:min(370px,94vw);
+    --lc-wheel:calc(100vw - 4px);
     margin-top:10px !important;
     padding:4px 0 clamp(12px,3.5vw,22px) !important;
     overflow:visible !important;
-    width:100% !important;
+    width:100vw !important;
+    max-width:100vw !important;
+    margin-left:calc(50% - 50vw) !important;
+    margin-right:calc(50% - 50vw) !important;
     display:flex !important;
     flex-direction:column !important;
     align-items:center !important;
     justify-content:flex-start !important;
-    min-height:calc(var(--lc-wheel) + clamp(20px,6vw,36px));
+    min-height:calc(var(--lc-wheel) + clamp(24px,7vw,44px));
     margin-bottom:clamp(4px,1vw,8px) !important;
     position:relative !important;
   }
   #complete-care .lc-track::before{display:none !important;}
 
   #complete-care .lc-steps{
-    --lc-wheel:min(370px,94vw);
+    --lc-wheel:calc(100vw - 4px);
     --lc-orbit:calc(var(--lc-wheel) * 0.38);
     --lc-spoke-w:calc(var(--lc-wheel) * 0.34);
     margin-bottom:clamp(4px,1vw,8px) !important;
@@ -1430,8 +1433,9 @@ footer .footer-legal a{color:var(--lavender-mid)}
     isolation:isolate !important;
     width:var(--lc-wheel) !important;
     height:var(--lc-wheel) !important;
-    min-width:280px !important;
-    min-height:280px !important;
+    min-width:0 !important;
+    min-height:0 !important;
+    max-width:calc(100vw - 4px) !important;
     margin:0 auto !important;
     border-radius:50% !important;
     overflow:visible !important;
@@ -1468,7 +1472,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
     position:absolute !important;
     top:50% !important;left:50% !important;
     transform:translate(-50%,-50%) !important;
-    font-size:13px !important;
+    font-size:16px !important;
     font-weight:800 !important;
     color:#0057a4 !important;
     -webkit-text-fill-color:#0057a4 !important;
@@ -1484,7 +1488,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
     position:absolute !important;
     top:50% !important;left:50% !important;
     width:var(--lc-spoke-w) !important;
-    max-width:112px !important;
+    max-width:155px !important;
     margin:0 !important;padding:0 !important;
     display:flex !important;
     flex-direction:column !important;
@@ -1509,9 +1513,9 @@ footer .footer-legal a{color:var(--lavender-mid)}
     display:flex !important;
     align-items:center !important;
     justify-content:center !important;
-    width:48px !important;
-    height:48px !important;
-    margin:0 0 4px !important;
+    width:50px !important;
+    height:50px !important;
+    margin:0 0 3px !important;
     border:0 !important;
     padding:0 !important;
     background:transparent !important;
@@ -1536,10 +1540,10 @@ footer .footer-legal a{color:var(--lavender-mid)}
     position:relative !important;
   }
   #complete-care .lc-baby-circle{
-    width:46px !important;
-    height:46px !important;
-    min-width:46px !important;
-    min-height:46px !important;
+    width:48px !important;
+    height:48px !important;
+    min-width:48px !important;
+    min-height:48px !important;
     flex-shrink:0 !important;
     display:grid !important;
     place-items:center !important;
@@ -1567,7 +1571,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
     transition:background .2s ease,box-shadow .2s ease,padding .2s ease,border-radius .2s ease;
   }
   #complete-care .lc-step-num{
-    font-size:9.5px !important;
+    font-size:12px !important;
     letter-spacing:.3px !important;
     color:var(--lavender-dark) !important;
     -webkit-text-fill-color:var(--lavender-dark) !important;
@@ -1578,8 +1582,8 @@ footer .footer-legal a{color:var(--lavender-mid)}
     transition:color .2s ease,font-size .2s ease,font-weight .2s ease;
   }
   #complete-care .lc-step-title{
-    font-size:clamp(10px,2.35vw,11.5px) !important;
-    line-height:1.15 !important;
+    font-size:clamp(12.5px,3.2vw,15px) !important;
+    line-height:1.2 !important;
     margin:1px 0 0 !important;
     color:var(--charcoal) !important;
     -webkit-text-fill-color:var(--charcoal) !important;
@@ -1598,7 +1602,7 @@ footer .footer-legal a{color:var(--lavender-mid)}
     backdrop-filter:blur(8px) !important;
   }
   #complete-care .lc-step.lc-step-active .lc-step-num{
-    font-size:10.5px !important;
+    font-size:13px !important;
     letter-spacing:.4px !important;
     color:#0057a4 !important;
     -webkit-text-fill-color:#0057a4 !important;
@@ -1606,8 +1610,8 @@ footer .footer-legal a{color:var(--lavender-mid)}
     line-height:1.1 !important;
   }
   #complete-care .lc-step.lc-step-active .lc-step-title{
-    font-size:clamp(11.5px,2.75vw,13px) !important;
-    line-height:1.22 !important;
+    font-size:clamp(14.5px,3.5vw,17px) !important;
+    line-height:1.25 !important;
     margin:2px 0 0 !important;
     color:#231f20 !important;
     -webkit-text-fill-color:#231f20 !important;
@@ -1792,21 +1796,20 @@ footer .footer-legal a{color:var(--lavender-mid)}
 }
 @media(max-width:400px){
   #complete-care .lc-track{
-    --lc-wheel:min(320px,92vw);
-    min-height:calc(var(--lc-wheel) + clamp(18px,5vw,32px)) !important;
+    --lc-wheel:calc(100vw - 4px);
+    min-height:calc(var(--lc-wheel) + clamp(20px,5.5vw,36px)) !important;
     padding-bottom:clamp(10px,3vw,18px) !important;
   }
   #complete-care .lc-steps{
-    --lc-wheel:min(320px,92vw) !important;
-    min-width:260px !important;
-    min-height:260px !important;
+    --lc-wheel:calc(100vw - 4px) !important;
+    max-width:calc(100vw - 4px) !important;
   }
   #complete-care .lc-cta-strip{margin-top:clamp(14px,4vw,24px) !important;}
-  #complete-care .lc-step-title{font-size:clamp(10px,2.35vw,11.5px) !important;line-height:1.15 !important;}
-  #complete-care .lc-step-num{font-size:9.5px !important;}
-  #complete-care .lc-step.lc-step-active .lc-step-title{font-size:11px !important;line-height:1.2 !important;}
-  #complete-care .lc-step.lc-step-active .lc-step-num{font-size:10px !important;}
-  #complete-care .lc-steps::after{font-size:12px !important;}
+  #complete-care .lc-step-title{font-size:clamp(12px,3vw,14px) !important;line-height:1.2 !important;}
+  #complete-care .lc-step-num{font-size:11.5px !important;}
+  #complete-care .lc-step.lc-step-active .lc-step-title{font-size:clamp(13.5px,3.4vw,16px) !important;line-height:1.22 !important;}
+  #complete-care .lc-step.lc-step-active .lc-step-num{font-size:12.5px !important;}
+  #complete-care .lc-steps::after{font-size:14px !important;}
   #complete-care .lc-step-tag{display:none !important;}
   .hero-bg{aspect-ratio:4/3.15;}
   .hero-top-row{margin-top:-5.25rem;}
